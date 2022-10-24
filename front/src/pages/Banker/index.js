@@ -26,7 +26,7 @@ function BankerPage() {
   const [amountToSend, setAmountToSend] = useState(0)
 
   useEffect(() => {
-    const socket = io(`http://localhost:${process.env.PORT || 4000}`)
+    const socket = io('https://monopoly-machine.herokuapp.com')
 
     api.get(`/banker/${id}`).then(({ data: { name, amount, players } }) => {
       socket.on('newPlayer', players =>
