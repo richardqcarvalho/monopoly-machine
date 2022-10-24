@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "yarn && webpack-dev-server",
-    "build": "yarn && webpack --mode=production"
+    "dev": "yarn && yarn webpack-dev-server",
+    "build": "yarn && yarn webpack --mode=production"
   },
   "keywords": [],
   "author": "",
