@@ -4,6 +4,7 @@ const { v4: uuid } = require('uuid')
 const { Server } = require('socket.io')
 const { createServer } = require('http')
 const { Sequelize, DataTypes } = require('sequelize')
+const path = require('path')
 
 const db = new Sequelize({
   dialect: 'sqlite',
@@ -29,12 +30,9 @@ const Player = db.define('Player', {
 const server = express()
 server.use(cors())
 server.use(express.json())
+server.use(express.static(path.join(__dirname, '..', 'front/dist')))
 const httpServer = createServer(server)
-const ws = new Server(httpServer, {
-  cors: {
-    origin: 'http://localhost:3000',
-  },
-})
+const ws = new Server(httpServer)
 
 ws.on('connection', socket => {
   console.log(`socket ${socket.id} connected`)
@@ -169,4 +167,6 @@ server.delete('/exit/:id', async (req, res) => {
   ws.emit('playerDropped', players)
 })
 
-httpServer.listen('4000', () => console.log('Connected'))
+httpServer.listen(process.env.PORT || '4000', () =>
+  console.log(`Connected on ${process.env.PORT}`)
+)
