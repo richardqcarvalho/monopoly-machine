@@ -4,7 +4,7 @@
   "description": "",
   "main": "runner.js",
   "scripts": {
-    "start": "concurrently \"cd back && yarn && yarn dev\" \"wait-on http://localhost:4000 && cd front && yarn && yarn dev\""
+    "start": "cd front && yarn build && cd ../back && yarn start\""
   },
   "keywords": [],
   "author": "",
