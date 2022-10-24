@@ -26,7 +26,7 @@ function CommonPlayerPage() {
   const [amountToSend, setAmountToSend] = useState(0)
 
   useEffect(() => {
-    const socket = io('http://localhost:4000')
+    const socket = io(`http://localhost:${process.env.PORT || 4000}`)
 
     api
       .get(`common-player/${id}`)
