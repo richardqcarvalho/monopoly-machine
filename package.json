@@ -4,7 +4,7 @@
   "description": "",
   "main": "runner.js",
   "scripts": {
-    "start": "cd front && yarn build && cd ../back && yarn start\""
+    "start": "cd front && yarn build && cd ../back && yarn start"
   },
   "keywords": [],
   "author": "",
