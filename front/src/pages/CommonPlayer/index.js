@@ -98,16 +98,6 @@ function CommonPlayerPage() {
       <Message>
         {amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
       </Message>
-      <CardsContainer>
-        {players.map(({ id, name }) => (
-          <Card key={id}>
-            <Message>{name}</Message>
-            <Button onClick={() => setInTransfer(id)}>
-              {id == 'bank' ? 'Pay' : 'Transfer'}
-            </Button>
-          </Card>
-        ))}
-      </CardsContainer>
       {inTransfer && (
         <Card
           style={{
@@ -126,8 +116,34 @@ function CommonPlayerPage() {
           >
             Send
           </Button>
+          <Button
+            onClick={() => setInTransfer(null)}
+            style={{ ...(inTransfer == 'bank' && { color: '#c0392b' }) }}
+          >
+            Cancel
+          </Button>
         </Card>
       )}
+      <CardsContainer>
+        {players.map(({ id, name }) => (
+          <Card
+            key={id}
+            style={{
+              ...(id == 'bank' && { backgroundColor: '#c0392b' }),
+            }}
+          >
+            <Message>{name}</Message>
+            <Button
+              style={{
+                ...(id == 'bank' && { color: '#c0392b' }),
+              }}
+              onClick={() => setInTransfer(id)}
+            >
+              {id == 'bank' ? 'Pay' : 'Transfer'}
+            </Button>
+          </Card>
+        ))}
+      </CardsContainer>
       {transfers.length > 0 && (
         <TransfersContainer>
           {transfers.map(({ amountSent, transferId, sender, receiver }) => (

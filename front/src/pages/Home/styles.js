@@ -31,6 +31,10 @@ export const Button = styled.button`
   margin: 10px 0;
   border: none;
   border-radius: 8px;
+  :disabled {
+    background-color: #ababab;
+    color: #cecece;
+  }
 `
 
 export const DropButton = styled.button`
@@ -56,7 +60,7 @@ export const Input = styled.input`
     outline: none;
   }
   margin: 10px 0;
-  width: 100%;
+  /* width: 100%; */
   text-align: center;
   font-size: 12pt;
   font-weight: 500;

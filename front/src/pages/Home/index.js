@@ -51,6 +51,8 @@ function HomePage() {
     })
   }
 
+  const buttonsDisabled = name.length === 0
+
   return (
     <Container>
       <Message>Welcome to the</Message>
@@ -60,9 +62,13 @@ function HomePage() {
         onChange={({ target: { value } }) => setName(value)}
       />
       {!bankerExistence.current && (
-        <Button onClick={() => createBanker()}>Create room</Button>
+        <Button disabled={buttonsDisabled} onClick={() => createBanker()}>
+          Create room
+        </Button>
       )}
-      <Button onClick={() => createCommonPlayer()}>Enter room</Button>
+      <Button disabled={buttonsDisabled} onClick={() => createCommonPlayer()}>
+        Enter room
+      </Button>
       <DropButton onClick={() => cleanTable()}>Drop room</DropButton>
     </Container>
   )

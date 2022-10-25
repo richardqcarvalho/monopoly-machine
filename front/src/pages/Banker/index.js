@@ -21,7 +21,7 @@ function BankerPage() {
   const [loading, setLoading] = useState(true)
   const [inTransfer, setInTransfer] = useState({ id: null, asBank: null })
   const navigate = useNavigate()
-  const { id } = getQueryParams(window.location.href)
+  const { id: bankerId } = getQueryParams(window.location.href)
   const [amount, setAmount] = useState(0)
   const [players, setPlayers] = useState([])
   const [playerName, setPlayerName] = useState('')
@@ -36,16 +36,22 @@ function BankerPage() {
     )
 
     api
-      .get(`/banker/${id}`)
+      .get(`/banker/${bankerId}`)
       .then(({ data: { name, amount, players, transfers } }) => {
         socket.on('newPlayer', players =>
-          setPlayers(players.filter(({ id: playerId }) => id != playerId))
+          setPlayers([
+            ...players.filter(({ id: playerId }) => bankerId != playerId),
+            { id: 'bank', name: 'Bank' },
+          ])
         )
         socket.on('playerDropped', players =>
-          setPlayers(players.filter(({ id: playerId }) => id != playerId))
+          setPlayers([
+            ...players.filter(({ id: playerId }) => bankerId != playerId),
+            { id: 'bank', name: 'Bank' },
+          ])
         )
         socket.on('updateAmounts', players => {
-          const info = players.find(({ id: playerId }) => id == playerId)
+          const info = players.find(({ id: playerId }) => bankerId == playerId)
           setAmount(info.amount)
         })
         socket.on('newTransfer', transfers => setTransfers(transfers))
@@ -53,7 +59,10 @@ function BankerPage() {
         socket.connect()
         setAmount(amount)
         setPlayerName(name)
-        setPlayers(players.filter(({ id: playerId }) => id != playerId))
+        setPlayers([
+          ...players.filter(({ id: playerId }) => bankerId != playerId),
+          { id: 'bank', name: 'Bank' },
+        ])
         setTransfers(transfers)
         setLoading(false)
       })
@@ -73,7 +82,7 @@ function BankerPage() {
 
   const transfer = () => {
     api
-      .post(`transfer/${id}/${inTransfer.id}`, {
+      .post(`transfer/${bankerId}/${inTransfer.id}`, {
         howMuch: amountToSend,
         asBank: inTransfer.asBank,
       })
@@ -86,19 +95,6 @@ function BankerPage() {
       <Message>
         {amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
       </Message>
-      <CardsContainer>
-        {players.map(({ id, name }) => (
-          <Card key={id}>
-            <Message>{name}</Message>
-            <Button onClick={() => setInTransfer({ id, asBank: false })}>
-              Transfer as me
-            </Button>
-            <Button onClick={() => setInTransfer({ id, asBank: true })}>
-              Transfer as bank
-            </Button>
-          </Card>
-        ))}
-      </CardsContainer>
       {inTransfer.id && (
         <Card
           style={{ ...(inTransfer.asBank && { backgroundColor: '#c0392b' }) }}
@@ -113,10 +109,46 @@ function BankerPage() {
             onClick={() => transfer()}
             style={{ ...(inTransfer.asBank && { color: '#c0392b' }) }}
           >
-            Send
+            {inTransfer.id == 'bank' ? 'Confirm' : 'Send'}
+          </Button>
+          <Button
+            onClick={() => setInTransfer({ id: null, asBank: null })}
+            style={{ ...(inTransfer == 'bank' && { color: '#c0392b' }) }}
+          >
+            Cancel
           </Button>
         </Card>
       )}
+      <CardsContainer>
+        {players.map(({ id, name }) => (
+          <Card
+            key={id}
+            style={{
+              ...(id == 'bank' && { backgroundColor: '#c0392b' }),
+            }}
+          >
+            <Message>{name}</Message>
+            {id != 'bank' && (
+              <Button onClick={() => setInTransfer({ id, asBank: false })}>
+                Transfer as me
+              </Button>
+            )}
+            <Button
+              style={{
+                ...(id == 'bank' && { color: '#c0392b' }),
+              }}
+              onClick={() =>
+                setInTransfer({
+                  id: id == 'bank' ? bankerId : id,
+                  asBank: true,
+                })
+              }
+            >
+              {id == 'bank' ? 'Receive' : 'Transfer as bank'}
+            </Button>
+          </Card>
+        ))}
+      </CardsContainer>
       {transfers.length > 0 && (
         <TransfersContainer>
           {transfers.map(({ amountSent, transferId, sender, receiver }) => (

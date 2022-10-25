@@ -7,12 +7,12 @@ export const Container = styled.div`
   align-items: center;
   justify-content: center;
   background-color: #3498db;
+  padding: 25px;
 `
 
 export const Title = styled.span`
   font-weight: 800;
   font-size: 28pt;
-  margin: 10px 0;
 `
 
 export const Message = styled.span`
@@ -38,22 +38,20 @@ export const Card = styled.div`
   flex-direction: column;
   align-items: center;
   background-color: #2980b9;
-  /* #3498db */
-  /* 2980b9 */
   margin: 10px;
   padding: 10px;
   border-radius: 8px;
 `
 
 export const CardsContainer = styled.div`
-  display: flex;
-  margin: 10px 0;
+  display: grid;
+  grid-template-columns: 150px 150px;
 `
 
 export const DropButton = styled.button`
   position: fixed;
-  bottom: 25px;
-  right: 25px;
+  bottom: 10px;
+  right: 10px;
   font-weight: 500;
   font-size: 7pt;
   padding: 10px;
@@ -74,7 +72,7 @@ export const Input = styled.input`
     outline: none;
   }
   margin: 10px 0;
-  width: 100%;
+  width: 260px;
   text-align: center;
   font-size: 12pt;
   font-weight: 500;
@@ -83,12 +81,14 @@ export const Input = styled.input`
 export const TransfersContainer = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: end;
   background-color: #fff;
   border-radius: 8px;
   padding: 25px;
   max-height: 200px;
   overflow-x: hidden;
+  margin: 10px 0;
+  width: 280px;
 `
 
 export const Transfers = styled.span`
