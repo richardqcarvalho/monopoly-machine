@@ -2,7 +2,6 @@
   "name": "monopoly-machine",
   "version": "1.0.0",
   "description": "",
-  "main": "runner.js",
   "scripts": {
     "start": "cd front && yarn build && cd ../back && yarn start"
   },
