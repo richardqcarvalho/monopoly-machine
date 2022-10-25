@@ -118,6 +118,7 @@ function CommonPlayerPage() {
             placeholder="How much?"
             style={{ ...(inTransfer == 'bank' && { color: '#c0392b' }) }}
             onChange={({ target: { value } }) => setAmountToSend(value)}
+            type="number"
           />
           <Button
             onClick={() => transfer()}

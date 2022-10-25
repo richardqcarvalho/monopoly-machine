@@ -62,9 +62,7 @@ ws.on('connection', socket => {
   })
 })
 
-server.get('/', (req, res) => res.json({ message: 'OK' }))
-
-server.get('/banker', async (req, res) => {
+server.get('/banker', async (_req, res) => {
   await db.sync()
 
   const banker = await Player.findAll({
@@ -107,6 +105,7 @@ server.post('/create-banker', async (req, res) => {
   const players = await Player.findAll()
 
   ws.emit('newPlayer', players)
+  ws.emit('updatePage')
 })
 
 server.get('/common-player/:id', async (req, res) => {
@@ -183,11 +182,13 @@ server.post('/transfer/:senderId/:receiverId', async (req, res) => {
   ws.emit('newTransfer', transfers)
 })
 
-server.delete('/clean', async (req, res) => {
+server.delete('/clean', async (_req, res) => {
   await Player.drop()
   await Transfer.drop()
 
   res.json({ message: 'OK' })
+
+  ws.emit('updatePage')
 })
 
 server.delete('/exit/:id', async (req, res) => {

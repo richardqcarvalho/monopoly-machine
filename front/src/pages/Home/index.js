@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Container, Title, Button, Message, DropButton, Input } from './styles'
 import Loading from '../../components/Loading'
 import api from '../../utils/api'
+import io from 'socket.io-client'
 
 function HomePage() {
   const [loading, setLoading] = useState(true)
@@ -11,10 +12,24 @@ function HomePage() {
   const navigate = useNavigate()
 
   useEffect(() => {
+    const socket = io(
+      process.env.NODE_ENV == 'development'
+        ? 'http://localhost:4000'
+        : 'https://monopoly-machine.herokuapp.com'
+    )
+
     api.get('banker').then(({ data: { bankerExists } }) => {
+      socket.on('updatePage', () => window.location.reload())
+      socket.connect()
+
       bankerExistence.current = bankerExists
       setLoading(false)
     })
+
+    return () => {
+      socket.off('updatePage')
+      socket.disconnect()
+    }
   }, [])
 
   if (loading) {

@@ -107,6 +107,7 @@ function BankerPage() {
             placeholder="How much?"
             style={{ ...(inTransfer.asBank && { color: '#c0392b' }) }}
             onChange={({ target: { value } }) => setAmountToSend(value)}
+            type="number"
           />
           <Button
             onClick={() => transfer()}
