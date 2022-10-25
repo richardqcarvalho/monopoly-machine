@@ -9,6 +9,8 @@ import {
   CardsContainer,
   DropButton,
   Input,
+  Transfers,
+  TransfersContainer,
 } from './styles'
 import Loading from '../../components/Loading'
 import { getQueryParams } from '../../utils'
@@ -24,30 +26,40 @@ function BankerPage() {
   const [players, setPlayers] = useState([])
   const [playerName, setPlayerName] = useState('')
   const [amountToSend, setAmountToSend] = useState(0)
+  const [transfers, setTransfers] = useState([])
 
   useEffect(() => {
-    const socket = io('https://monopoly-machine.herokuapp.com')
+    const socket = io(
+      process.env.NODE_ENV == 'development'
+        ? 'http://localhost:4000'
+        : 'https://monopoly-machine.herokuapp.com'
+    )
 
-    api.get(`/banker/${id}`).then(({ data: { name, amount, players } }) => {
-      socket.on('newPlayer', players =>
+    api
+      .get(`/banker/${id}`)
+      .then(({ data: { name, amount, players, transfers } }) => {
+        socket.on('newPlayer', players =>
+          setPlayers(players.filter(({ id: playerId }) => id != playerId))
+        )
+        socket.on('playerDropped', players =>
+          setPlayers(players.filter(({ id: playerId }) => id != playerId))
+        )
+        socket.on('updateAmounts', players => {
+          const info = players.find(({ id: playerId }) => id == playerId)
+          setAmount(info.amount)
+        })
+        socket.on('newTransfer', transfers => setTransfers(transfers))
+
+        socket.connect()
+        setAmount(amount)
+        setPlayerName(name)
         setPlayers(players.filter(({ id: playerId }) => id != playerId))
-      )
-      socket.on('playerDropped', players =>
-        setPlayers(players.filter(({ id: playerId }) => id != playerId))
-      )
-      socket.on('updateAmounts', players => {
-        const info = players.find(({ id: playerId }) => id == playerId)
-        setAmount(info.amount)
+        setTransfers(transfers)
+        setLoading(false)
       })
 
-      socket.connect()
-      setAmount(amount)
-      setPlayerName(name)
-      setPlayers(players.filter(({ id: playerId }) => id != playerId))
-      setLoading(false)
-    })
-
     return () => {
+      socket.off('newTransfer')
       socket.off('updateAmounts')
       socket.off('newPlayer')
       socket.off('connect')
@@ -103,6 +115,18 @@ function BankerPage() {
             Send
           </Button>
         </Card>
+      )}
+      {transfers.length > 0 && (
+        <TransfersContainer>
+          {transfers.map(({ amountSent, transferId, sender, receiver }) => (
+            <Transfers
+              key={transferId}
+            >{`${sender} -> ${receiver} = ${amountSent.toLocaleString('pt-BR', {
+              style: 'currency',
+              currency: 'BRL',
+            })}`}</Transfers>
+          ))}
+        </TransfersContainer>
       )}
       {/* <DropButton>Give up</DropButton> */}
     </Container>

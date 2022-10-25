@@ -27,12 +27,32 @@ const Player = db.define('Player', {
   },
 })
 
+const Transfer = db.define('Transfer', {
+  id: {
+    type: DataTypes.UUID,
+    primaryKey: true,
+  },
+  sender: {
+    type: DataTypes.STRING,
+  },
+  receiver: {
+    type: DataTypes.STRING,
+  },
+  amountSent: {
+    type: DataTypes.NUMBER,
+  },
+})
+
 const server = express()
 server.use(cors())
 server.use(express.json())
 server.use(express.static(path.join(__dirname, '..', 'front/dist')))
 const httpServer = createServer(server)
-const ws = new Server(httpServer)
+const ws = new Server(httpServer, {
+  cors: {
+    origin: 'http://localhost:3000',
+  },
+})
 
 ws.on('connection', socket => {
   console.log(`socket ${socket.id} connected`)
@@ -63,8 +83,9 @@ server.get('/banker/:id', async (req, res) => {
 
   const player = await Player.findByPk(id)
   const players = await Player.findAll()
+  const transfers = await Transfer.findAll()
 
-  res.json({ ...player.dataValues, players })
+  res.json({ ...player.dataValues, players, transfers })
 })
 
 server.post('/create-banker', async (req, res) => {
@@ -95,8 +116,9 @@ server.get('/common-player/:id', async (req, res) => {
 
   const player = await Player.findByPk(id)
   const players = await Player.findAll()
+  const transfers = await Transfer.findAll()
 
-  res.json({ ...player.dataValues, players })
+  res.json({ ...player.dataValues, players, transfers })
 })
 
 server.post('/create-common-player', async (req, res) => {
@@ -123,17 +145,31 @@ server.post('/create-common-player', async (req, res) => {
 server.post('/transfer/:senderId/:receiverId', async (req, res) => {
   const { senderId, receiverId } = req.params
   const { howMuch, asBank } = req.body
+  const id = uuid()
+  let senderName = 'Bank'
+  let receiverName = 'Bank'
 
   if (!asBank) {
     const sender = await Player.findByPk(senderId)
     await sender.update({
       amount: sender.amount - parseInt(howMuch),
     })
+    senderName = sender.name
   }
 
-  const receiver = await Player.findByPk(receiverId)
-  await receiver.update({
-    amount: receiver.amount + parseInt(howMuch),
+  if (receiverId != 'bank') {
+    const receiver = await Player.findByPk(receiverId)
+    await receiver.update({
+      amount: receiver.amount + parseInt(howMuch),
+    })
+    receiverName = receiver.name
+  }
+
+  await Transfer.create({
+    id,
+    sender: senderName,
+    receiver: receiverName,
+    amountSent: howMuch,
   })
 
   res.json({ transfer: 'OK' })
@@ -141,10 +177,15 @@ server.post('/transfer/:senderId/:receiverId', async (req, res) => {
   const players = await Player.findAll()
 
   ws.emit('updateAmounts', players)
+
+  const transfers = await Transfer.findAll()
+
+  ws.emit('newTransfer', transfers)
 })
 
 server.delete('/clean', async (req, res) => {
   await Player.drop()
+  await Transfer.drop()
 
   res.json({ message: 'OK' })
 })
@@ -167,6 +208,6 @@ server.delete('/exit/:id', async (req, res) => {
   ws.emit('playerDropped', players)
 })
 
-httpServer.listen(process.env.PORT || '4000', () =>
-  console.log(`Connected on ${process.env.PORT}`)
-)
+const port = process.env.PORT || '4000'
+
+httpServer.listen(port, () => console.log(`Connected on ${port}`))

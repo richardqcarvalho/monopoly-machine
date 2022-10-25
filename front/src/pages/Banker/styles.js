@@ -78,3 +78,20 @@ export const Input = styled.input`
   font-size: 12pt;
   font-weight: 500;
 `
+
+export const TransfersContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 25px;
+  max-height: 200px;
+  overflow-x: hidden;
+`
+
+export const Transfers = styled.span`
+  color: #000;
+  font-weight: 500;
+  font-size: 10pt;
+`
