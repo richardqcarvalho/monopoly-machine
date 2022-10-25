@@ -113,7 +113,7 @@ function BankerPage() {
           </Button>
           <Button
             onClick={() => setInTransfer({ id: null, asBank: null })}
-            style={{ ...(inTransfer == 'bank' && { color: '#c0392b' }) }}
+            style={{ ...(inTransfer.asBank && { color: '#c0392b' }) }}
           >
             Cancel
           </Button>
@@ -128,11 +128,14 @@ function BankerPage() {
             }}
           >
             <Message>{name}</Message>
-            {id != 'bank' && (
-              <Button onClick={() => setInTransfer({ id, asBank: false })}>
-                Transfer as me
-              </Button>
-            )}
+            <Button
+              style={{
+                ...(id == 'bank' && { color: '#c0392b' }),
+              }}
+              onClick={() => setInTransfer({ id, asBank: false })}
+            >
+              {id == 'bank' ? 'Pay to bank' : 'Transfer as me'}
+            </Button>
             <Button
               style={{
                 ...(id == 'bank' && { color: '#c0392b' }),
@@ -144,7 +147,7 @@ function BankerPage() {
                 })
               }
             >
-              {id == 'bank' ? 'Receive' : 'Transfer as bank'}
+              {id == 'bank' ? 'Receive from bank' : 'Transfer as bank'}
             </Button>
           </Card>
         ))}
