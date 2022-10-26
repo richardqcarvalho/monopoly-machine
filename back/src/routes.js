@@ -3,7 +3,7 @@ import Player from './database/models/player.js'
 import Transfer from './database/models/transfer.js'
 import { v4 as uuid } from 'uuid'
 import express from 'express'
-import ws from '../server.js'
+import ws from './server.js'
 
 const routes = express.Router()
 

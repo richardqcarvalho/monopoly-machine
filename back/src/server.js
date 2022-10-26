@@ -3,7 +3,7 @@ import cors from 'cors'
 import { Server } from 'socket.io'
 import { createServer } from 'http'
 import path from 'path'
-import routes from './src/routes.js'
+import routes from './routes.js'
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
 
