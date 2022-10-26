@@ -171,7 +171,7 @@ server.post('/transfer/:senderId/:receiverId', async (req, res) => {
     amountSent: howMuch,
   })
 
-  res.status(200)
+  res.status(200).send()
 
   const players = await Player.findAll()
 
@@ -186,7 +186,7 @@ server.delete('/clean', async (_req, res) => {
   await Player.drop()
   await Transfer.drop()
 
-  res.status(200)
+  res.status(200).send()
 
   ws.emit('bankerDropped')
   ws.emit('updatePage')
@@ -203,7 +203,7 @@ server.delete('/exit/:id', async (req, res) => {
     await Player.drop()
     await Transfer.drop()
 
-    res.status(200)
+    res.status(200).send()
 
     ws.emit('bankerDropped')
     ws.emit('updatePage')
@@ -214,7 +214,7 @@ server.delete('/exit/:id', async (req, res) => {
       },
     })
 
-    res.status(200)
+    res.status(200).send()
 
     const players = await Player.findAll()
 
