@@ -92,12 +92,20 @@ server.post('/create-banker', async (req, res) => {
   const { name } = req.body
 
   const id = uuid()
+  const transferId = uuid()
 
   const data = await Player.create({
     id,
     name,
     amount: 200000,
     banker: true,
+  })
+
+  await Transfer.create({
+    id: transferId,
+    sender: 'Bank',
+    receiver: name,
+    amountSent: 200000,
   })
 
   res.json(data)
@@ -126,6 +134,7 @@ server.post('/create-common-player', async (req, res) => {
   const { name } = req.body
 
   const id = uuid()
+  const transferId = uuid()
 
   const data = await Player.create({
     id,
@@ -134,11 +143,20 @@ server.post('/create-common-player', async (req, res) => {
     banker: false,
   })
 
+  await Transfer.create({
+    id: transferId,
+    sender: 'Bank',
+    receiver: name,
+    amountSent: 200000,
+  })
+
   res.json(data)
 
   const players = await Player.findAll()
+  const transfers = await Transfer.findAll()
 
   ws.emit('updatePlayers', players)
+  ws.emit('newTransfer', transfers)
 })
 
 server.post('/transfer/:senderId/:receiverId', async (req, res) => {
