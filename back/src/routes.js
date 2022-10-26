@@ -1,68 +1,13 @@
-const express = require('express')
-const cors = require('cors')
-const { v4: uuid } = require('uuid')
-const { Server } = require('socket.io')
-const { createServer } = require('http')
-const { Sequelize, DataTypes } = require('sequelize')
-const path = require('path')
+import db from './database/index.js'
+import Player from './database/models/player.js'
+import Transfer from './database/models/transfer.js'
+import { v4 as uuid } from 'uuid'
+import express from 'express'
+import ws from '../server.js'
 
-const db = new Sequelize({
-  dialect: 'sqlite',
-  storage: './bd.sqlite',
-})
+const routes = express.Router()
 
-const Player = db.define('Player', {
-  id: {
-    type: DataTypes.UUID,
-    primaryKey: true,
-  },
-  name: {
-    type: DataTypes.STRING,
-  },
-  amount: {
-    type: DataTypes.NUMBER,
-  },
-  banker: {
-    type: DataTypes.BOOLEAN,
-  },
-})
-
-const Transfer = db.define('Transfer', {
-  id: {
-    type: DataTypes.UUID,
-    primaryKey: true,
-  },
-  sender: {
-    type: DataTypes.STRING,
-  },
-  receiver: {
-    type: DataTypes.STRING,
-  },
-  amountSent: {
-    type: DataTypes.NUMBER,
-  },
-})
-
-const server = express()
-server.use(cors())
-server.use(express.json())
-server.use(express.static(path.join(__dirname, '..', 'front/dist')))
-const httpServer = createServer(server)
-const ws = new Server(httpServer, {
-  cors: {
-    origin: ['http://localhost:3000', 'http://localhost:4000'],
-  },
-})
-
-ws.on('connection', socket => {
-  console.log(`socket ${socket.id} connected`)
-
-  socket.on('disconnect', reason => {
-    console.log(`socket ${socket.id} disconnected due to ${reason}`)
-  })
-})
-
-server.get('/banker', async (_req, res) => {
+routes.get('/banker', async (_req, res) => {
   await db.sync()
 
   const banker = await Player.findAll({
@@ -74,7 +19,7 @@ server.get('/banker', async (_req, res) => {
   res.json({ bankerExists: !!banker.length })
 })
 
-server.get('/banker/:id', async (req, res) => {
+routes.get('/banker/:id', async (req, res) => {
   await db.sync()
 
   const { id } = req.params
@@ -86,7 +31,7 @@ server.get('/banker/:id', async (req, res) => {
   res.json({ ...player.dataValues, players, transfers })
 })
 
-server.post('/create-banker', async (req, res) => {
+routes.post('/create-banker', async (req, res) => {
   await db.sync()
 
   const { name } = req.body
@@ -116,7 +61,7 @@ server.post('/create-banker', async (req, res) => {
   ws.emit('updatePage')
 })
 
-server.get('/common-player/:id', async (req, res) => {
+routes.get('/common-player/:id', async (req, res) => {
   await db.sync()
 
   const { id } = req.params
@@ -128,7 +73,7 @@ server.get('/common-player/:id', async (req, res) => {
   res.json({ ...player.dataValues, players, transfers })
 })
 
-server.post('/create-common-player', async (req, res) => {
+routes.post('/create-common-player', async (req, res) => {
   await db.sync()
 
   const { name } = req.body
@@ -159,7 +104,7 @@ server.post('/create-common-player', async (req, res) => {
   ws.emit('newTransfer', transfers)
 })
 
-server.post('/transfer/:senderId/:receiverId', async (req, res) => {
+routes.post('/transfer/:senderId/:receiverId', async (req, res) => {
   const { senderId, receiverId } = req.params
   const { howMuch, asBank } = req.body
   const id = uuid()
@@ -200,7 +145,7 @@ server.post('/transfer/:senderId/:receiverId', async (req, res) => {
   ws.emit('newTransfer', transfers)
 })
 
-server.delete('/clean', async (_req, res) => {
+routes.delete('/clean', async (_req, res) => {
   await Player.drop()
   await Transfer.drop()
 
@@ -210,7 +155,7 @@ server.delete('/clean', async (_req, res) => {
   ws.emit('updatePage')
 })
 
-server.delete('/exit/:id', async (req, res) => {
+routes.delete('/exit/:id', async (req, res) => {
   await db.sync()
 
   const { id } = req.params
@@ -240,6 +185,4 @@ server.delete('/exit/:id', async (req, res) => {
   }
 })
 
-const port = process.env.PORT || '4000'
-
-httpServer.listen(port, () => console.log(`Connected on port ${port}`))
+export default routes
