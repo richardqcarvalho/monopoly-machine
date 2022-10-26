@@ -50,7 +50,7 @@ server.use(express.static(path.join(__dirname, '..', 'front/dist')))
 const httpServer = createServer(server)
 const ws = new Server(httpServer, {
   cors: {
-    origin: '*',
+    origin: ['http://localhost:3000', 'http://localhost:4000'],
   },
 })
 
