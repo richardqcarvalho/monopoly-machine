@@ -6,10 +6,10 @@ import api from '../../utils/api'
 import io from 'socket.io-client'
 
 function HomePage() {
+  const navigate = useNavigate()
+  const bankerExistence = useRef(false)
   const [loading, setLoading] = useState(true)
   const [name, setName] = useState('')
-  const bankerExistence = useRef(false)
-  const navigate = useNavigate()
 
   useEffect(() => {
     const socket = io(
@@ -23,6 +23,7 @@ function HomePage() {
       socket.connect()
 
       bankerExistence.current = bankerExists
+
       setLoading(false)
     })
 
@@ -39,17 +40,15 @@ function HomePage() {
   const cleanTable = () =>
     api.delete('/clean').then(() => window.location.reload(true))
 
-  const createBanker = () => {
+  const createBanker = () =>
     api.post('/create-banker', { name }).then(({ data: { id } }) => {
       navigate(`/banker?id=${id}`)
     })
-  }
 
-  const createCommonPlayer = () => {
+  const createCommonPlayer = () =>
     api.post('/create-common-player', { name }).then(({ data: { id } }) => {
       navigate(`/common-player?id=${id}`)
     })
-  }
 
   const buttonsDisabled = name.length === 0
 
@@ -69,7 +68,9 @@ function HomePage() {
       <Button disabled={buttonsDisabled} onClick={() => createCommonPlayer()}>
         Enter room
       </Button>
-      <DropButton onClick={() => cleanTable()}>Drop room</DropButton>
+      {bankerExistence.current && (
+        <DropButton onClick={() => cleanTable()}>Drop room</DropButton>
+      )}
     </Container>
   )
 }

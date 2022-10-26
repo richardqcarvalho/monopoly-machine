@@ -1,4 +1,5 @@
 import styled from 'styled-components'
+import colors from '../../styles/colors'
 
 export const Container = styled.div`
   display: flex;
@@ -6,7 +7,7 @@ export const Container = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: #3498db;
+  background-color: ${colors.primary};
   padding: 25px;
 `
 
@@ -25,19 +26,55 @@ export const Button = styled.button`
   font-weight: 500;
   font-size: 12pt;
   padding: 15px;
-  background-color: #fff;
-  color: #26a8df;
+  background-color: ${colors.contrast};
+  color: ${colors.secondary};
   margin: 10px 0;
   border: none;
   border-radius: 8px;
   width: 100%;
+  :disabled {
+    background-color: ${colors.primaryDisabled};
+    color: ${colors.contrastDisabled};
+  }
+`
+
+export const DropButton = styled.button`
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  font-weight: 500;
+  font-size: 7pt;
+  padding: 10px;
+  background-color: ${colors.danger};
+  color: ${colors.contrast};
+  margin: 10px 0;
+  border: none;
+  border-radius: 8px;
+`
+
+export const Input = styled.input`
+  border: none;
+  padding: 15px;
+  background-color: #fff;
+  color: ${colors.secondary};
+  border-radius: 8px;
+  :focus {
+    outline: none;
+  }
+  margin: 10px 0;
+  text-align: center;
+  font-size: 12pt;
+  font-weight: 500;
+  ::placeholder {
+    color: ${colors.contrastDisabled};
+  }
 `
 
 export const Card = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: #2980b9;
+  background-color: ${colors.secondary};
   margin: 10px;
   padding: 10px;
   border-radius: 8px;
@@ -48,41 +85,11 @@ export const CardsContainer = styled.div`
   grid-template-columns: 150px 150px;
 `
 
-export const DropButton = styled.button`
-  position: fixed;
-  bottom: 10px;
-  right: 10px;
-  font-weight: 500;
-  font-size: 7pt;
-  padding: 10px;
-  background-color: #c0392b;
-  color: #fff;
-  margin: 10px 0;
-  border: none;
-  border-radius: 8px;
-`
-
-export const Input = styled.input`
-  border: none;
-  padding: 15px;
-  background-color: #fff;
-  color: #26a8df;
-  border-radius: 8px;
-  :focus {
-    outline: none;
-  }
-  margin: 10px 0;
-  width: 260px;
-  text-align: center;
-  font-size: 12pt;
-  font-weight: 500;
-`
-
 export const TransfersContainer = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: end;
-  background-color: #fff;
+  align-items: center;
+  background-color: ${colors.contrast};
   border-radius: 8px;
   padding: 25px;
   max-height: 200px;
@@ -92,7 +99,7 @@ export const TransfersContainer = styled.div`
 `
 
 export const Transfers = styled.span`
-  color: #000;
+  color: ${colors.primaryDisabled};
   font-weight: 500;
   font-size: 10pt;
 `

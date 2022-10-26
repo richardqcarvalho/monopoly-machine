@@ -16,11 +16,12 @@ import { useNavigate } from 'react-router-dom'
 import { getQueryParams } from '../../utils'
 import api from '../../utils/api'
 import io from 'socket.io-client'
+import colors from '../../styles/colors'
 
 function CommonPlayerPage() {
-  const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
   const { id } = getQueryParams(window.location.href)
+  const [loading, setLoading] = useState(true)
   const [amount, setAmount] = useState(0)
   const [players, setPlayers] = useState([{ id: 'bank', name: 'Bank' }])
   const [inTransfer, setInTransfer] = useState(null)
@@ -38,13 +39,7 @@ function CommonPlayerPage() {
     api
       .get(`common-player/${id}`)
       .then(({ data: { name, amount, players, transfers } }) => {
-        socket.on('newPlayer', players =>
-          setPlayers([
-            ...players.filter(({ id: playerId }) => id != playerId),
-            { id: 'bank', name: 'Bank' },
-          ])
-        )
-        socket.on('playerDropped', players =>
+        socket.on('updatePlayers', players =>
           setPlayers([
             ...players.filter(({ id: playerId }) => id != playerId),
             { id: 'bank', name: 'Bank' },
@@ -55,8 +50,9 @@ function CommonPlayerPage() {
           setAmount(info.amount)
         })
         socket.on('newTransfer', transfers => setTransfers(transfers))
-
+        socket.on('bankerDropped', () => navigate('/'))
         socket.connect()
+
         setAmount(amount)
         setPlayerName(name)
         setPlayers([
@@ -68,10 +64,10 @@ function CommonPlayerPage() {
       })
 
     return () => {
-      socket.off('newTransfer')
+      socket.off('updatePlayers')
       socket.off('updateAmounts')
-      socket.off('newPlayer')
-      socket.off('connect')
+      socket.off('newTransfer')
+      socket.off('bankerDropped')
       socket.disconnect()
     }
   }, [])
@@ -85,12 +81,17 @@ function CommonPlayerPage() {
       .post(`transfer/${id}/${inTransfer}`, {
         howMuch: amountToSend,
       })
-      .then(() => setInTransfer(null))
+      .then(() => {
+        setInTransfer(null)
+        setAmountToSend(0)
+      })
   }
 
   const giveUp = () => {
     api.delete(`/exit/${id}`).then(() => navigate('/'))
   }
+
+  const buttonsDisabled = amountToSend == 0
 
   return (
     <Container>
@@ -101,24 +102,25 @@ function CommonPlayerPage() {
       {inTransfer && (
         <Card
           style={{
-            ...(inTransfer == 'bank' && { backgroundColor: '#c0392b' }),
+            ...(inTransfer == 'bank' && { backgroundColor: colors.danger }),
           }}
         >
           <Input
             placeholder="How much?"
-            style={{ ...(inTransfer == 'bank' && { color: '#c0392b' }) }}
+            style={{ ...(inTransfer == 'bank' && { color: colors.danger }) }}
             onChange={({ target: { value } }) => setAmountToSend(value)}
             type="number"
           />
           <Button
             onClick={() => transfer()}
-            style={{ ...(inTransfer == 'bank' && { color: '#c0392b' }) }}
+            style={{ ...(inTransfer == 'bank' && { color: colors.danger }) }}
+            disabled={buttonsDisabled}
           >
             Send
           </Button>
           <Button
             onClick={() => setInTransfer(null)}
-            style={{ ...(inTransfer == 'bank' && { color: '#c0392b' }) }}
+            style={{ ...(inTransfer == 'bank' && { color: colors.danger }) }}
           >
             Cancel
           </Button>
@@ -129,13 +131,13 @@ function CommonPlayerPage() {
           <Card
             key={id}
             style={{
-              ...(id == 'bank' && { backgroundColor: '#c0392b' }),
+              ...(id == 'bank' && { backgroundColor: colors.danger }),
             }}
           >
             <Message>{name}</Message>
             <Button
               style={{
-                ...(id == 'bank' && { color: '#c0392b' }),
+                ...(id == 'bank' && { color: colors.danger }),
               }}
               onClick={() => setInTransfer(id)}
             >
@@ -149,7 +151,12 @@ function CommonPlayerPage() {
           {transfers.map(({ amountSent, transferId, sender, receiver }) => (
             <Transfers
               key={transferId}
-            >{`${sender} -> ${receiver} = ${amountSent.toLocaleString('pt-BR', {
+              style={{
+                ...((sender == playerName || receiver == playerName) && {
+                  color: sender == playerName ? colors.danger : colors.success,
+                }),
+              }}
+            >{`${sender} -> ${receiver} | ${amountSent.toLocaleString('pt-BR', {
               style: 'currency',
               currency: 'BRL',
             })}`}</Transfers>

@@ -16,12 +16,13 @@ import Loading from '../../components/Loading'
 import { getQueryParams } from '../../utils'
 import api from '../../utils/api'
 import io from 'socket.io-client'
+import colors from '../../styles/colors'
 
 function BankerPage() {
-  const [loading, setLoading] = useState(true)
-  const [inTransfer, setInTransfer] = useState({ id: null, asBank: null })
   const navigate = useNavigate()
   const { id: bankerId } = getQueryParams(window.location.href)
+  const [loading, setLoading] = useState(true)
+  const [inTransfer, setInTransfer] = useState({ id: null, asBank: null })
   const [amount, setAmount] = useState(0)
   const [players, setPlayers] = useState([])
   const [playerName, setPlayerName] = useState('')
@@ -38,13 +39,7 @@ function BankerPage() {
     api
       .get(`/banker/${bankerId}`)
       .then(({ data: { name, amount, players, transfers } }) => {
-        socket.on('newPlayer', players =>
-          setPlayers([
-            ...players.filter(({ id: playerId }) => bankerId != playerId),
-            { id: 'bank', name: 'Bank' },
-          ])
-        )
-        socket.on('playerDropped', players =>
+        socket.on('updatePlayers', players =>
           setPlayers([
             ...players.filter(({ id: playerId }) => bankerId != playerId),
             { id: 'bank', name: 'Bank' },
@@ -55,8 +50,8 @@ function BankerPage() {
           setAmount(info.amount)
         })
         socket.on('newTransfer', transfers => setTransfers(transfers))
-
         socket.connect()
+
         setAmount(amount)
         setPlayerName(name)
         setPlayers([
@@ -68,10 +63,9 @@ function BankerPage() {
       })
 
     return () => {
-      socket.off('newTransfer')
+      socket.off('updatePlayers')
       socket.off('updateAmounts')
-      socket.off('newPlayer')
-      socket.off('connect')
+      socket.off('newTransfer')
       socket.disconnect()
     }
   }, [])
@@ -86,8 +80,17 @@ function BankerPage() {
         howMuch: amountToSend,
         asBank: inTransfer.asBank,
       })
-      .then(() => setInTransfer({ id: null, asBank: null }))
+      .then(() => {
+        setInTransfer({ id: null, asBank: null })
+        setAmountToSend(0)
+      })
   }
+
+  const giveUp = () => {
+    api.delete(`/exit/${bankerId}`).then(() => navigate('/'))
+  }
+
+  const buttonsDisabled = amountToSend == 0
 
   return (
     <Container>
@@ -97,23 +100,26 @@ function BankerPage() {
       </Message>
       {inTransfer.id && (
         <Card
-          style={{ ...(inTransfer.asBank && { backgroundColor: '#c0392b' }) }}
+          style={{
+            ...(inTransfer.asBank && { backgroundColor: colors.danger }),
+          }}
         >
           <Input
             placeholder="How much?"
-            style={{ ...(inTransfer.asBank && { color: '#c0392b' }) }}
+            style={{ ...(inTransfer.asBank && { color: colors.danger }) }}
             onChange={({ target: { value } }) => setAmountToSend(value)}
             type="number"
           />
           <Button
             onClick={() => transfer()}
-            style={{ ...(inTransfer.asBank && { color: '#c0392b' }) }}
+            style={{ ...(inTransfer.asBank && { color: colors.danger }) }}
+            disabled={buttonsDisabled}
           >
-            {inTransfer.id == 'bank' ? 'Confirm' : 'Send'}
+            {inTransfer.id == bankerId ? 'Receive' : 'Send'}
           </Button>
           <Button
             onClick={() => setInTransfer({ id: null, asBank: null })}
-            style={{ ...(inTransfer.asBank && { color: '#c0392b' }) }}
+            style={{ ...(inTransfer.asBank && { color: colors.danger }) }}
           >
             Cancel
           </Button>
@@ -124,13 +130,13 @@ function BankerPage() {
           <Card
             key={id}
             style={{
-              ...(id == 'bank' && { backgroundColor: '#c0392b' }),
+              ...(id == 'bank' && { backgroundColor: colors.danger }),
             }}
           >
             <Message>{name}</Message>
             <Button
               style={{
-                ...(id == 'bank' && { color: '#c0392b' }),
+                ...(id == 'bank' && { color: colors.danger }),
               }}
               onClick={() => setInTransfer({ id, asBank: false })}
             >
@@ -138,7 +144,7 @@ function BankerPage() {
             </Button>
             <Button
               style={{
-                ...(id == 'bank' && { color: '#c0392b' }),
+                ...(id == 'bank' && { color: colors.danger }),
               }}
               onClick={() =>
                 setInTransfer({
@@ -157,14 +163,19 @@ function BankerPage() {
           {transfers.map(({ amountSent, transferId, sender, receiver }) => (
             <Transfers
               key={transferId}
-            >{`${sender} -> ${receiver} = ${amountSent.toLocaleString('pt-BR', {
+              style={{
+                ...((sender == playerName || receiver == playerName) && {
+                  color: sender == playerName ? colors.danger : colors.success,
+                }),
+              }}
+            >{`${sender} -> ${receiver} | ${amountSent.toLocaleString('pt-BR', {
               style: 'currency',
               currency: 'BRL',
             })}`}</Transfers>
           ))}
         </TransfersContainer>
       )}
-      {/* <DropButton>Give up</DropButton> */}
+      <DropButton onClick={() => giveUp()}>Give up</DropButton>
     </Container>
   )
 }
