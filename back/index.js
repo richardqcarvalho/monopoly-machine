@@ -50,7 +50,7 @@ server.use(express.static(path.join(__dirname, '..', 'front/dist')))
 const httpServer = createServer(server)
 const ws = new Server(httpServer, {
   cors: {
-    origin: 'http://localhost:3000',
+    origin: '*',
   },
 })
 
@@ -104,7 +104,7 @@ server.post('/create-banker', async (req, res) => {
 
   const players = await Player.findAll()
 
-  ws.emit('newPlayer', players)
+  ws.emit('updatePlayers', players)
   ws.emit('updatePage')
 })
 
@@ -138,7 +138,7 @@ server.post('/create-common-player', async (req, res) => {
 
   const players = await Player.findAll()
 
-  ws.emit('newPlayer', players)
+  ws.emit('updatePlayers', players)
 })
 
 server.post('/transfer/:senderId/:receiverId', async (req, res) => {
@@ -171,7 +171,7 @@ server.post('/transfer/:senderId/:receiverId', async (req, res) => {
     amountSent: howMuch,
   })
 
-  res.json({ transfer: 'OK' })
+  res.status(200)
 
   const players = await Player.findAll()
 
@@ -186,8 +186,9 @@ server.delete('/clean', async (_req, res) => {
   await Player.drop()
   await Transfer.drop()
 
-  res.json({ message: 'OK' })
+  res.status(200)
 
+  ws.emit('bankerDropped')
   ws.emit('updatePage')
 })
 
@@ -196,19 +197,31 @@ server.delete('/exit/:id', async (req, res) => {
 
   const { id } = req.params
 
-  await Player.destroy({
-    where: {
-      id,
-    },
-  })
+  const player = await Player.findByPk(id)
 
-  res.json({ message: 'OK' })
+  if (player.banker) {
+    await Player.drop()
+    await Transfer.drop()
 
-  const players = await Player.findAll()
+    res.status(200)
 
-  ws.emit('playerDropped', players)
+    ws.emit('bankerDropped')
+    ws.emit('updatePage')
+  } else {
+    await Player.destroy({
+      where: {
+        id,
+      },
+    })
+
+    res.status(200)
+
+    const players = await Player.findAll()
+
+    ws.emit('updatePlayers', players)
+  }
 })
 
 const port = process.env.PORT || '4000'
 
-httpServer.listen(port, () => console.log(`Connected on ${port}`))
+httpServer.listen(port, () => console.log(`Connected on port ${port}`))
