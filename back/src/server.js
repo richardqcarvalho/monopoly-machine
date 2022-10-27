@@ -13,8 +13,8 @@ const __dirname = dirname(__filename)
 const server = express()
 
 server.use(cors())
+server.use(express.static(path.join(__dirname, '..', '..', 'front/dist')))
 server.use(express.json())
-server.use(express.static(path.join(__dirname, '..', 'front/dist')))
 server.use(routes)
 
 const httpServer = createServer(server)
