@@ -6,6 +6,7 @@ import path from 'path'
 import routes from './routes.js'
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
+import favicon from 'serve-favicon'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -13,7 +14,10 @@ const __dirname = dirname(__filename)
 const server = express()
 
 server.use(cors())
-server.use(express.static(path.join(__dirname, '..', '..', 'front/dist')))
+server.use(
+  favicon(path.join(__dirname, '..', '..', 'front', 'dist', 'favicon.ico'))
+)
+server.use(express.static(path.join(__dirname, '..', '..', 'front', 'dist')))
 server.use(express.json())
 server.use(routes)
 
