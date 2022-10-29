@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { Fragment, useEffect, useState, useRef } from 'react'
 import {
   Container,
   Title,
@@ -10,6 +10,11 @@ import {
   Input,
   TransfersContainer,
   Transfers,
+  ErrorMessage,
+  ErrorMessageWrapper,
+  TransferConfirmation,
+  AmountToSend,
+  PlayersAmount,
 } from './styles'
 import Loading from '../../components/Loading'
 import { useNavigate } from 'react-router-dom'
@@ -18,13 +23,21 @@ import api from '../../utils/api'
 import io from 'socket.io-client'
 import colors from '../../styles/colors'
 
+const DEFAULT_STATE = {
+  id: null,
+  loading: false,
+  confirmation: false,
+  name: '',
+}
+
 function CommonPlayerPage() {
   const navigate = useNavigate()
   const { id } = getQueryParams(window.location.href)
+  const transfersContainerRef = useRef()
   const [loading, setLoading] = useState(true)
   const [amount, setAmount] = useState(0)
-  const [players, setPlayers] = useState([{ id: 'bank', name: 'Bank' }])
-  const [inTransfer, setInTransfer] = useState(null)
+  const [players, setPlayers] = useState([])
+  const [inTransfer, setInTransfer] = useState(DEFAULT_STATE)
   const [playerName, setPlayerName] = useState('')
   const [amountToSend, setAmountToSend] = useState(0)
   const [transfers, setTransfers] = useState([])
@@ -39,15 +52,13 @@ function CommonPlayerPage() {
     api
       .get(`common-player/${id}`)
       .then(({ data: { name, amount, players, transfers } }) => {
-        socket.on('updatePlayers', players =>
+        socket.on('updateInfo', players => {
           setPlayers([
             ...players.filter(({ id: playerId }) => id != playerId),
             { id: 'bank', name: 'Bank' },
           ])
-        )
-        socket.on('updateAmounts', players => {
-          const info = players.find(({ id: playerId }) => id == playerId)
-          setAmount(info.amount)
+          const { amount } = players.find(({ id: playerId }) => id == playerId)
+          setAmount(parseInt(amount))
         })
         socket.on('newTransfer', transfers => setTransfers(transfers))
         socket.on('bankerDropped', () => navigate('/'))
@@ -64,7 +75,7 @@ function CommonPlayerPage() {
       })
 
     return () => {
-      socket.off('updatePlayers')
+      socket.off('updateInfo')
       socket.off('updateAmounts')
       socket.off('newTransfer')
       socket.off('bankerDropped')
@@ -72,17 +83,25 @@ function CommonPlayerPage() {
     }
   }, [])
 
+  useEffect(() => {
+    const element = transfersContainerRef.current
+
+    if (element) element.scrollTo(0, element.scrollHeight)
+  }, [transfers])
+
   if (loading) {
     return <Loading />
   }
 
   const transfer = () => {
+    setInTransfer({ ...inTransfer, loading: true })
+
     api
-      .post(`transfer/${id}/${inTransfer}`, {
+      .post(`transfer/${id}/${inTransfer.id}`, {
         howMuch: amountToSend,
       })
       .then(() => {
-        setInTransfer(null)
+        setInTransfer(DEFAULT_STATE)
         setAmountToSend(0)
       })
   }
@@ -91,7 +110,8 @@ function CommonPlayerPage() {
     api.delete(`/exit/${id}`).then(() => navigate('/'))
   }
 
-  const buttonsDisabled = amountToSend == 0
+  const amountBiggerThanBalance = amountToSend > amount
+  const buttonsDisabled = amountToSend == 0 || amountBiggerThanBalance
 
   return (
     <Container>
@@ -99,35 +119,84 @@ function CommonPlayerPage() {
       <Message>
         {amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
       </Message>
-      {inTransfer && (
-        <Card
+      {inTransfer.id && (
+        <TransferConfirmation
           style={{
-            ...(inTransfer == 'bank' && { backgroundColor: colors.danger }),
+            ...(inTransfer.id == 'bank' && { backgroundColor: colors.danger }),
           }}
         >
-          <Input
-            placeholder="How much?"
-            style={{ ...(inTransfer == 'bank' && { color: colors.danger }) }}
-            onChange={({ target: { value } }) => setAmountToSend(value)}
-            type="number"
-          />
-          <Button
-            onClick={() => transfer()}
-            style={{ ...(inTransfer == 'bank' && { color: colors.danger }) }}
-            disabled={buttonsDisabled}
-          >
-            Send
-          </Button>
-          <Button
-            onClick={() => setInTransfer(null)}
-            style={{ ...(inTransfer == 'bank' && { color: colors.danger }) }}
-          >
-            Cancel
-          </Button>
-        </Card>
+          {inTransfer.loading ? (
+            <Loading type={inTransfer.id == 'bank' ? 'danger' : 'default'} />
+          ) : inTransfer.confirmation ? (
+            <Fragment>
+              <Message>{`You will send to ${
+                inTransfer.name || 'Bank'
+              }`}</Message>
+              <AmountToSend>
+                {amountToSend.toLocaleString('pt-BR', {
+                  style: 'currency',
+                  currency: 'BRL',
+                })}
+              </AmountToSend>
+              <Button
+                onClick={() => transfer()}
+                style={{ color: colors.danger }}
+              >
+                Confirm
+              </Button>
+              <Button
+                onClick={() => setInTransfer(DEFAULT_STATE)}
+                style={{
+                  ...(inTransfer.id == 'bank' && { color: colors.danger }),
+                }}
+              >
+                Cancel
+              </Button>
+            </Fragment>
+          ) : (
+            <Fragment>
+              <Input
+                placeholder="How much?"
+                style={{
+                  ...(inTransfer.id == 'bank' && { color: colors.danger }),
+                }}
+                onChange={({ target: { value } }) =>
+                  setAmountToSend(parseInt(value))
+                }
+                type="number"
+              />
+              {amountBiggerThanBalance && (
+                <ErrorMessageWrapper>
+                  <ErrorMessage>
+                    Amount to send bigger than balance you have
+                  </ErrorMessage>
+                </ErrorMessageWrapper>
+              )}
+              <Button
+                onClick={() =>
+                  setInTransfer({ ...inTransfer, confirmation: true })
+                }
+                style={{
+                  ...(inTransfer.id == 'bank' && { color: colors.danger }),
+                }}
+                disabled={buttonsDisabled}
+              >
+                Send
+              </Button>
+              <Button
+                onClick={() => setInTransfer(DEFAULT_STATE)}
+                style={{
+                  ...(inTransfer.id == 'bank' && { color: colors.danger }),
+                }}
+              >
+                Cancel
+              </Button>
+            </Fragment>
+          )}
+        </TransferConfirmation>
       )}
       <CardsContainer>
-        {players.map(({ id, name }) => (
+        {players.map(({ id, name, amount }) => (
           <Card
             key={id}
             style={{
@@ -135,11 +204,19 @@ function CommonPlayerPage() {
             }}
           >
             <Message>{name}</Message>
+            <PlayersAmount>
+              {amount
+                ? parseInt(amount).toLocaleString('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL',
+                  })
+                : 'Infinite'}
+            </PlayersAmount>
             <Button
               style={{
                 ...(id == 'bank' && { color: colors.danger }),
               }}
-              onClick={() => setInTransfer(id)}
+              onClick={() => setInTransfer({ ...inTransfer, id, name })}
             >
               {id == 'bank' ? 'Pay' : 'Transfer'}
             </Button>
@@ -147,10 +224,10 @@ function CommonPlayerPage() {
         ))}
       </CardsContainer>
       {transfers.length > 0 && (
-        <TransfersContainer>
-          {transfers.map(({ amountSent, transferId, sender, receiver }) => (
+        <TransfersContainer ref={transfersContainerRef}>
+          {transfers.map(({ amountSent, id, sender, receiver }) => (
             <Transfers
-              key={transferId}
+              key={id}
               style={{
                 ...((sender == playerName || receiver == playerName) && {
                   color: sender == playerName ? colors.danger : colors.success,

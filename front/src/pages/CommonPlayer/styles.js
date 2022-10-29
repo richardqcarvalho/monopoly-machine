@@ -14,17 +14,23 @@ export const Container = styled.div`
 export const Title = styled.span`
   font-weight: 800;
   font-size: 28pt;
+  word-break: break-word;
+  text-align: center;
 `
 
 export const Message = styled.span`
   font-weight: 500;
   font-size: 14pt;
+  word-break: break-word;
+  text-align: center;
   margin: 10px 0;
 `
 
 export const Button = styled.button`
   font-weight: 500;
   font-size: 12pt;
+  word-break: break-word;
+  text-align: center;
   padding: 15px;
   background-color: ${colors.contrast};
   color: ${colors.secondary};
@@ -44,6 +50,8 @@ export const DropButton = styled.button`
   right: 10px;
   font-weight: 500;
   font-size: 7pt;
+  word-break: break-word;
+  text-align: center;
   padding: 10px;
   background-color: ${colors.danger};
   color: ${colors.contrast};
@@ -64,16 +72,20 @@ export const Input = styled.input`
   margin: 10px 0;
   text-align: center;
   font-size: 12pt;
+  word-break: break-word;
+  text-align: center;
   font-weight: 500;
   ::placeholder {
     color: ${colors.contrastDisabled};
   }
+  width: 100%;
 `
 
 export const Card = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   background-color: ${colors.secondary};
   margin: 10px;
   padding: 10px;
@@ -102,4 +114,54 @@ export const Transfers = styled.span`
   color: ${colors.primaryDisabled};
   font-weight: 500;
   font-size: 10pt;
+  word-break: break-word;
+  text-align: center;
+`
+
+export const ErrorMessage = styled.span`
+  color: ${colors.contrast};
+  font-weight: 500;
+  font-size: 8pt;
+  word-break: break-word;
+  text-align: center;
+`
+
+export const ErrorMessageWrapper = styled.div`
+  background-color: ${colors.danger};
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 5px;
+  border-radius: 8px;
+`
+
+export const TransferConfirmation = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: ${colors.secondary};
+  margin: 10px;
+  padding: 25px;
+  border-radius: 8px;
+  width: 280px;
+  min-height: 280px;
+`
+
+export const AmountToSend = styled.span`
+  color: ${colors.constrast};
+  font-weight: 900;
+  font-size: 24pt;
+  word-break: break-word;
+  text-align: center;
+  margin-bottom: 10px;
+`
+
+export const PlayersAmount = styled.span`
+  color: ${colors.contrast};
+  font-weight: 500;
+  font-size: 10pt;
+  text-align: center;
+  margin-bottom: 10px;
+  margin-top: -5px;
 `

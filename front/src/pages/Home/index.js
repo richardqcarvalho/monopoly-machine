@@ -50,7 +50,7 @@ function HomePage() {
       navigate(`/common-player?id=${id}`)
     })
 
-  const buttonsDisabled = name.length === 0
+  const buttonsDisabled = name.length == 0
 
   return (
     <Container>
