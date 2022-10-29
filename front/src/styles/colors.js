@@ -4,6 +4,6 @@ export default {
   secondary: '#2980b9',
   danger: '#c0392b',
   success: '#27ae60',
-  primaryDisabled: '#eee',
+  primaryDisabled: '#ccc',
   contrastDisabled: '#aaa',
 }
