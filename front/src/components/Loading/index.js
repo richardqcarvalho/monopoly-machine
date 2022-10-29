@@ -1,11 +1,14 @@
 import React from 'react'
 import { Container } from './styles'
 import Signal from 'react-loading'
+import colors from '../../styles/colors'
 
-function Loading() {
+function Loading({ type = 'default' }) {
   return (
-    <Container>
-      <Signal type="spin" />
+    <Container
+      style={{ ...(type == 'danger' && { backgroundColor: colors.danger }) }}
+    >
+      <Signal type="spin" color={colors.contrast} />
     </Container>
   )
 }

@@ -1,4 +1,5 @@
 import styled from 'styled-components'
+import colors from '../../styles/colors'
 
 export const Container = styled.div`
   display: flex;
@@ -6,5 +7,5 @@ export const Container = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: #26a8df;
+  background-color: ${colors.secondary};
 `
