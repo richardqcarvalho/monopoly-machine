@@ -53,12 +53,13 @@ routes.post('/create-banker', async (req, res) => {
     amountSent: 200000,
   })
 
-  res.json(data)
-
   const players = await Player.findAll()
 
-  ws.emit('updatePlayers', players)
-  ws.emit('updatePage')
+  ws.emit('updateInfo', players)
+
+  res.json(data)
+
+  setTimeout(() => ws.emit('updatePage'), 1000)
 })
 
 routes.get('/common-player/:id', async (req, res) => {
@@ -95,13 +96,13 @@ routes.post('/create-common-player', async (req, res) => {
     amountSent: 200000,
   })
 
-  res.json(data)
-
   const players = await Player.findAll()
   const transfers = await Transfer.findAll()
 
-  ws.emit('updatePlayers', players)
+  ws.emit('updateInfo', players)
   ws.emit('newTransfer', transfers)
+
+  res.json(data)
 })
 
 routes.post('/transfer/:senderId/:receiverId', async (req, res) => {
@@ -134,15 +135,15 @@ routes.post('/transfer/:senderId/:receiverId', async (req, res) => {
     amountSent: howMuch,
   })
 
-  res.status(200).send()
-
   const players = await Player.findAll()
 
-  ws.emit('updateAmounts', players)
+  ws.emit('updateInfo', players)
 
   const transfers = await Transfer.findAll()
 
   ws.emit('newTransfer', transfers)
+
+  res.status(200).send()
 })
 
 routes.delete('/clean', async (_req, res) => {
@@ -177,11 +178,11 @@ routes.delete('/exit/:id', async (req, res) => {
       },
     })
 
-    res.status(200).send()
-
     const players = await Player.findAll()
 
-    ws.emit('updatePlayers', players)
+    ws.emit('updateInfo', players)
+
+    res.status(200).send()
   }
 })
 
