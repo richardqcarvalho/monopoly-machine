@@ -32,7 +32,7 @@ function CommonPlayerPage() {
   useEffect(() => {
     const socket = io(
       process.env.NODE_ENV == 'development'
-        ? 'http://localhost:4000'
+        ? 'http://10.0.0.175:4000'
         : 'https://monopoly-machine.herokuapp.com'
     )
 

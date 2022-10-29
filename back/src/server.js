@@ -25,7 +25,7 @@ const httpServer = createServer(server)
 
 const ws = new Server(httpServer, {
   cors: {
-    origin: ['http://localhost:3000', 'http://localhost:4000'],
+    origin: ['http://10.0.0.175:3000', 'http://10.0.0.175:4000'],
   },
 })
 
