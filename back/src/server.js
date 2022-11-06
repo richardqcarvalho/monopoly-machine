@@ -23,7 +23,6 @@ server.use(express.json())
 server.use(routes)
 
 const netWorkInfo = os.networkInterfaces()
-const [_a, _b, _c, { address: ip }] = netWorkInfo['Wi-Fi']
 
 const httpServer = createServer(server)
 
@@ -43,6 +42,11 @@ ws.on('connection', socket => {
 
 const port = process.env.PORT || '4000'
 
-httpServer.listen(port, () => console.log(`Connected on http://${ip}:${port}`))
+if (netWorkInfo) {
+  const [_a, _b, _c, { address: ip }] = netWorkInfo['Wi-Fi']
+  httpServer.listen(port, () =>
+    console.log(`Connected on http://${ip}:${port}`)
+  )
+} else httpServer.listen(port, () => console.log(`Listening on port ${port}`))
 
 export default ws
