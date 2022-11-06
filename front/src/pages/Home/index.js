@@ -14,7 +14,7 @@ function HomePage() {
   useEffect(() => {
     const socket = io(
       process.env.NODE_ENV == 'development'
-        ? 'http://10.0.0.175:4000'
+        ? 'http://192.168.15.9:4000'
         : 'https://monopoly-machine.herokuapp.com'
     )
 

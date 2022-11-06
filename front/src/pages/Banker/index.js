@@ -46,7 +46,7 @@ function BankerPage() {
   useEffect(() => {
     const socket = io(
       process.env.NODE_ENV == 'development'
-        ? 'http://10.0.0.175:4000'
+        ? 'http://192.168.15.9:4000'
         : 'https://monopoly-machine.herokuapp.com'
     )
 
@@ -62,6 +62,7 @@ function BankerPage() {
           setAmount(parseInt(amount))
         })
         socket.on('newTransfer', transfers => setTransfers(transfers))
+        socket.on('bankerDropped', () => navigate('/'))
         socket.connect()
 
         setAmount(amount)
@@ -73,10 +74,12 @@ function BankerPage() {
         setTransfers(transfers)
         setLoading(false)
       })
+      .catch(() => navigate('/'))
 
     return () => {
       socket.off('updateInfo')
       socket.off('newTransfer')
+      socket.off('bankerDropped')
       socket.disconnect()
     }
   }, [])
@@ -107,6 +110,10 @@ function BankerPage() {
 
   const giveUp = () => {
     api.delete(`/exit/${bankerId}`).then(() => navigate('/'))
+  }
+
+  const passBank = id => {
+    api.post(`/pass-bank/${bankerId}/${id}`).then(() => navigate('/'))
   }
 
   const amountBiggerThanBalance = amountToSend > amount && !inTransfer.asBank
@@ -198,12 +205,12 @@ function BankerPage() {
           >
             <Message>{name}</Message>
             <PlayersAmount>
-              {amount
+              {amount != null
                 ? parseInt(amount).toLocaleString('pt-BR', {
                     style: 'currency',
                     currency: 'BRL',
                   })
-                : 'Infinite'}
+                : '💸'}
             </PlayersAmount>
             <Button
               style={{
@@ -230,6 +237,17 @@ function BankerPage() {
             >
               {id == 'bank' ? 'Receive from bank' : 'Transfer as bank'}
             </Button>
+            {id != 'bank' && (
+              <Button
+                style={{
+                  backgroundColor: colors.danger,
+                  color: colors.contrast,
+                }}
+                onClick={() => passBank(id)}
+              >
+                Pass bank
+              </Button>
+            )}
           </Card>
         ))}
       </CardsContainer>

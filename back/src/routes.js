@@ -7,6 +7,38 @@ import ws from './server.js'
 
 const routes = express.Router()
 
+routes.post('/pass-bank/:currentBankerId/:newBankerId', async (req, res) => {
+  await db.sync()
+
+  const { currentBankerId, newBankerId } = req.params
+
+  await Player.destroy({
+    where: {
+      id: currentBankerId,
+    },
+  })
+  const newBanker = await Player.findByPk(newBankerId)
+
+  await newBanker.update({
+    banker: true,
+  })
+
+  const players = await Player.findAll()
+
+  ws.emit('passBank', newBankerId)
+  ws.emit('updateInfo', players)
+
+  res.status(200).send()
+})
+
+routes.get('/players', async (req, res) => {
+  await db.sync()
+
+  const players = await Player.findAll()
+
+  res.json({ players })
+})
+
 routes.get('/banker', async (_req, res) => {
   await db.sync()
 
@@ -28,7 +60,8 @@ routes.get('/banker/:id', async (req, res) => {
   const players = await Player.findAll()
   const transfers = await Transfer.findAll()
 
-  res.json({ ...player.dataValues, players, transfers })
+  if (player) res.json({ ...player.dataValues, players, transfers })
+  else res.status(400).send()
 })
 
 routes.post('/create-banker', async (req, res) => {
@@ -71,7 +104,8 @@ routes.get('/common-player/:id', async (req, res) => {
   const players = await Player.findAll()
   const transfers = await Transfer.findAll()
 
-  res.json({ ...player.dataValues, players, transfers })
+  if (player) res.json({ ...player.dataValues, players, transfers })
+  else res.status(400).send()
 })
 
 routes.post('/create-common-player', async (req, res) => {

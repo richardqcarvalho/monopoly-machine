@@ -7,6 +7,7 @@ import routes from './routes.js'
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
 import favicon from 'serve-favicon'
+import os from 'os'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -21,11 +22,14 @@ server.use(express.static(path.join(__dirname, '..', '..', 'front', 'dist')))
 server.use(express.json())
 server.use(routes)
 
+const netWorkInfo = os.networkInterfaces()
+const [_a, _b, _c, { address: ip }] = netWorkInfo['Wi-Fi']
+
 const httpServer = createServer(server)
 
 const ws = new Server(httpServer, {
   cors: {
-    origin: ['http://10.0.0.175:3000', 'http://10.0.0.175:4000'],
+    origin: '*',
   },
 })
 
@@ -39,6 +43,6 @@ ws.on('connection', socket => {
 
 const port = process.env.PORT || '4000'
 
-httpServer.listen(port, () => console.log(`Connected on port ${port}`))
+httpServer.listen(port, () => console.log(`Connected on http://${ip}:${port}`))
 
 export default ws
