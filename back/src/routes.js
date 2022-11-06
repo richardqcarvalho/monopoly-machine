@@ -92,7 +92,7 @@ routes.post('/create-banker', async (req, res) => {
 
   res.json(data)
 
-  ws.emit('updatePage')
+  ws.emit('updatePage', true)
 })
 
 routes.get('/common-player/:id', async (req, res) => {
@@ -187,7 +187,7 @@ routes.delete('/clean', async (_req, res) => {
   res.status(200).send()
 
   ws.emit('bankerDropped')
-  ws.emit('updatePage')
+  ws.emit('updatePage', false)
 })
 
 routes.delete('/exit/:id', async (req, res) => {
@@ -204,7 +204,7 @@ routes.delete('/exit/:id', async (req, res) => {
     res.status(200).send()
 
     ws.emit('bankerDropped')
-    ws.emit('updatePage')
+    ws.emit('updatePage', false)
   } else {
     await Player.destroy({
       where: {

@@ -7,7 +7,7 @@ import io from 'socket.io-client'
 
 function HomePage() {
   const navigate = useNavigate()
-  const bankerExistence = useRef(false)
+  const [bankerExistence, setBankerExistence] = useState(false)
   const [loading, setLoading] = useState(true)
   const [name, setName] = useState('')
 
@@ -19,12 +19,12 @@ function HomePage() {
     )
 
     api.get('banker').then(({ data: { bankerExists } }) => {
-      socket.on('updatePage', () => {
-        if (!Boolean(window.location.hash)) window.location.reload()
-      })
+      socket.on('updatePage', bankerExistence =>
+        setBankerExistence(bankerExistence)
+      )
       socket.connect()
 
-      bankerExistence.current = bankerExists
+      setBankerExistence(bankerExists)
 
       setLoading(false)
     })
@@ -39,8 +39,7 @@ function HomePage() {
     return <Loading />
   }
 
-  const cleanTable = () =>
-    api.delete('/clean').then(() => window.location.reload(true))
+  const cleanTable = () => api.delete('/clean')
 
   const createBanker = () =>
     api.post('/create-banker', { name }).then(({ data: { id } }) => {
@@ -62,15 +61,16 @@ function HomePage() {
         placeholder="Insert your name"
         onChange={({ target: { value } }) => setName(value)}
       />
-      {!bankerExistence.current && (
+      {bankerExistence ? (
+        <Button disabled={buttonsDisabled} onClick={() => createCommonPlayer()}>
+          Enter room
+        </Button>
+      ) : (
         <Button disabled={buttonsDisabled} onClick={() => createBanker()}>
           Create room
         </Button>
       )}
-      <Button disabled={buttonsDisabled} onClick={() => createCommonPlayer()}>
-        Enter room
-      </Button>
-      {bankerExistence.current && (
+      {bankerExistence && (
         <DropButton onClick={() => cleanTable()}>Drop room</DropButton>
       )}
     </Container>
