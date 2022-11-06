@@ -140,12 +140,16 @@ export const TransferConfirmation = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: ${colors.secondary};
-  margin: 10px;
+  background-color: ${({ color }) => color || colors.secondary};
   padding: 25px;
   border-radius: 8px;
-  width: 280px;
-  min-height: 280px;
+  width: 80vw;
+  height: 40vh;
+  position: fixed;
+  top: calc(30vh);
+  left: calc(10vw);
+  box-shadow: 0px 0px 5px;
+  backdrop-filter: blur(50px);
 `
 
 export const AmountToSend = styled.span`

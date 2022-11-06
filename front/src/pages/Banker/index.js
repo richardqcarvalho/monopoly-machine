@@ -157,7 +157,6 @@ function BankerPage() {
                 onClick={() =>
                   setInTransfer({ ...inTransfer, confirmation: false })
                 }
-                style={{ color: colors.danger }}
               >
                 Edit
               </Button>
@@ -196,7 +195,10 @@ function BankerPage() {
                 {inTransfer.id == bankerId ? 'Receive' : 'Send'}
               </Button>
               <Button
-                onClick={() => setInTransfer(DEFAULT_STATE)}
+                onClick={() => {
+                  setInTransfer(DEFAULT_STATE)
+                  setAmountToSend(null)
+                }}
                 style={{ ...(inTransfer.asBank && { color: colors.danger }) }}
               >
                 Cancel

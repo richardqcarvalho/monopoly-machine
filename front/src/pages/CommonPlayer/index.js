@@ -39,7 +39,7 @@ function CommonPlayerPage() {
   const [players, setPlayers] = useState([])
   const [inTransfer, setInTransfer] = useState(DEFAULT_STATE)
   const [playerName, setPlayerName] = useState('')
-  const [amountToSend, setAmountToSend] = useState(0)
+  const [amountToSend, setAmountToSend] = useState(null)
   const [transfers, setTransfers] = useState([])
 
   useEffect(() => {
@@ -107,7 +107,7 @@ function CommonPlayerPage() {
       })
       .then(() => {
         setInTransfer(DEFAULT_STATE)
-        setAmountToSend(0)
+        setAmountToSend(null)
       })
   }
 
@@ -116,7 +116,8 @@ function CommonPlayerPage() {
   }
 
   const amountBiggerThanBalance = amountToSend > amount
-  const buttonsDisabled = amountToSend == 0 || amountBiggerThanBalance
+  const buttonsDisabled =
+    amountToSend == 0 || amountBiggerThanBalance || amountToSend == null
 
   return (
     <Container>
@@ -150,6 +151,13 @@ function CommonPlayerPage() {
                 Confirm
               </Button>
               <Button
+                onClick={() =>
+                  setInTransfer({ ...inTransfer, confirmation: false })
+                }
+              >
+                Edit
+              </Button>
+              <Button
                 onClick={() => setInTransfer(DEFAULT_STATE)}
                 style={{
                   ...(inTransfer.id == 'bank' && { color: colors.danger }),
@@ -166,8 +174,9 @@ function CommonPlayerPage() {
                   ...(inTransfer.id == 'bank' && { color: colors.danger }),
                 }}
                 onChange={({ target: { value } }) =>
-                  setAmountToSend(parseInt(value))
+                  setAmountToSend(value == '' ? null : parseInt(value))
                 }
+                value={amountToSend}
                 type="number"
               />
               {amountBiggerThanBalance && (
@@ -189,7 +198,10 @@ function CommonPlayerPage() {
                 Send
               </Button>
               <Button
-                onClick={() => setInTransfer(DEFAULT_STATE)}
+                onClick={() => {
+                  setInTransfer(DEFAULT_STATE)
+                  setAmountToSend(null)
+                }}
                 style={{
                   ...(inTransfer.id == 'bank' && { color: colors.danger }),
                 }}
