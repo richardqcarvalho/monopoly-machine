@@ -19,7 +19,9 @@ function HomePage() {
     )
 
     api.get('banker').then(({ data: { bankerExists } }) => {
-      socket.on('updatePage', () => window.location.reload())
+      socket.on('updatePage', () => {
+        if (!Boolean(window.location.hash)) window.location.reload()
+      })
       socket.connect()
 
       bankerExistence.current = bankerExists

@@ -31,7 +31,7 @@ routes.post('/pass-bank/:currentBankerId/:newBankerId', async (req, res) => {
   res.status(200).send()
 })
 
-routes.get('/players', async (req, res) => {
+routes.get('/players', async (_req, res) => {
   await db.sync()
 
   const players = await Player.findAll()
@@ -92,7 +92,7 @@ routes.post('/create-banker', async (req, res) => {
 
   res.json(data)
 
-  setTimeout(() => ws.emit('updatePage'), 1000)
+  ws.emit('updatePage')
 })
 
 routes.get('/common-player/:id', async (req, res) => {
