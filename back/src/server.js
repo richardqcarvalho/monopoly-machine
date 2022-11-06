@@ -42,9 +42,7 @@ ws.on('connection', socket => {
 
 const port = process.env.PORT || '4000'
 
-if (netWorkInfo) {
-  console.log({ netWorkInfo })
-
+if (netWorkInfo['Wi-Fi']) {
   const [_a, _b, _c, { address: ip }] = netWorkInfo['Wi-Fi']
   httpServer.listen(port, () =>
     console.log(`Connected on http://${ip}:${port}`)
