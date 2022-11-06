@@ -40,7 +40,7 @@ function BankerPage() {
   const [amount, setAmount] = useState(0)
   const [players, setPlayers] = useState([])
   const [playerName, setPlayerName] = useState('')
-  const [amountToSend, setAmountToSend] = useState(0)
+  const [amountToSend, setAmountToSend] = useState(null)
   const [transfers, setTransfers] = useState([])
 
   useEffect(() => {
@@ -104,7 +104,7 @@ function BankerPage() {
       })
       .then(() => {
         setInTransfer(DEFAULT_STATE)
-        setAmountToSend(0)
+        setAmountToSend(null)
       })
   }
 
@@ -117,7 +117,8 @@ function BankerPage() {
   }
 
   const amountBiggerThanBalance = amountToSend > amount && !inTransfer.asBank
-  const buttonsDisabled = amountToSend == 0 || amountBiggerThanBalance
+  const buttonsDisabled =
+    amountToSend == 0 || amountBiggerThanBalance || amountToSend == null
 
   return (
     <Container>
@@ -153,6 +154,14 @@ function BankerPage() {
                 Confirm
               </Button>
               <Button
+                onClick={() =>
+                  setInTransfer({ ...inTransfer, confirmation: false })
+                }
+                style={{ color: colors.danger }}
+              >
+                Edit
+              </Button>
+              <Button
                 onClick={() => setInTransfer(DEFAULT_STATE)}
                 style={{ ...(inTransfer.asBank && { color: colors.danger }) }}
               >
@@ -165,8 +174,9 @@ function BankerPage() {
                 placeholder="How much?"
                 style={{ ...(inTransfer.asBank && { color: colors.danger }) }}
                 onChange={({ target: { value } }) =>
-                  setAmountToSend(parseInt(value))
+                  setAmountToSend(value == '' ? null : parseInt(value))
                 }
+                value={amountToSend}
                 type="number"
               />
               {amountBiggerThanBalance && (
