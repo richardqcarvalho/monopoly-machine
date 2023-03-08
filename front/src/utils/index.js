@@ -14,3 +14,7 @@ export const getQueryParams = url => {
 
   return obj
 }
+
+export const getURL = () => {
+  return 'http://localhost:4000'
+}

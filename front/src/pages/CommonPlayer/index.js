@@ -18,7 +18,7 @@ import {
 } from './styles'
 import Loading from '../../components/Loading'
 import { useNavigate } from 'react-router-dom'
-import { getQueryParams } from '../../utils'
+import { getQueryParams, getURL } from '../../utils'
 import api from '../../utils/api'
 import io from 'socket.io-client'
 import colors from '../../styles/colors'
@@ -43,11 +43,7 @@ function CommonPlayerPage() {
   const [transfers, setTransfers] = useState([])
 
   useEffect(() => {
-    const socket = io(
-      process.env.NODE_ENV == 'development'
-        ? 'http://192.168.15.9:4000'
-        : 'https://monopoly-machine.herokuapp.com'
-    )
+    const socket = io(getURL())
 
     api
       .get(`common-player/${id}`)

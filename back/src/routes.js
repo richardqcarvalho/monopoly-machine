@@ -60,7 +60,7 @@ routes.get('/banker/:id', async (req, res) => {
   const players = await Player.findAll()
   const transfers = await Transfer.findAll()
 
-  if (player) res.json({ ...player.dataValues, players, transfers })
+  if (player) res.json({ ...player.dataValues, player, players, transfers })
   else res.status(400).send()
 })
 
@@ -104,8 +104,37 @@ routes.get('/common-player/:id', async (req, res) => {
   const players = await Player.findAll()
   const transfers = await Transfer.findAll()
 
-  if (player) res.json({ ...player.dataValues, players, transfers })
+  if (player) res.json({ ...player.dataValues, player, players, transfers })
   else res.status(400).send()
+})
+
+routes.get('/player/:id', async (req, res) => {
+  await db.sync()
+
+  const { id } = req.params
+
+  const player = await Player.findByPk(id)
+  const players = await Player.findAll()
+  const transfers = await Transfer.findAll()
+
+  if (player) res.json({ player, players, transfers })
+  else res.status(400).send()
+})
+
+routes.post('/change/:id', async (req, res) => {
+  await db.sync()
+
+  const { id } = req.params
+
+  const player = await Player.findByPk(id)
+
+  if (player) {
+    player.update({
+      banker: !player.dataValues.banker,
+    })
+
+    res.json({ player })
+  } else res.status(400).send()
 })
 
 routes.post('/create-common-player', async (req, res) => {
