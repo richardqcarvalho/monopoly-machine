@@ -1,232 +1,214 @@
-import db from './database/index.js'
-import Player from './database/models/player.js'
-import Transfer from './database/models/transfer.js'
-import { v4 as uuid } from 'uuid'
 import express from 'express'
-import ws from './server.js'
+import { v4 as uuid } from 'uuid'
+import { Player } from './database/entities.js'
 
-const routes = express.Router()
+const getRoutes = (db, ws) => {
+  const routes = express.Router()
 
-routes.post('/pass-bank/:currentBankerId/:newBankerId', async (req, res) => {
-  await db.sync()
+  routes.get('/', (_req, res) => res.status(200).json({ message: 'OK' }))
 
-  const { currentBankerId, newBankerId } = req.params
+  routes.post('/pass-bank/:currentBankerId/:newBankerId', async (req, res) => {
+    await db.sync()
 
-  await Player.destroy({
-    where: {
-      id: currentBankerId,
-    },
-  })
-  const newBanker = await Player.findByPk(newBankerId)
+    const { currentBankerId, newBankerId } = req.params
 
-  await newBanker.update({
-    banker: true,
-  })
+    await Player.destroy({
+      where: {
+        id: currentBankerId,
+      },
+    })
+    const newBanker = await Player.findByPk(newBankerId)
 
-  const players = await Player.findAll()
-
-  ws.emit('passBank', newBankerId)
-  ws.emit('updateInfo', players)
-
-  res.status(200).send()
-})
-
-routes.get('/players', async (_req, res) => {
-  await db.sync()
-
-  const players = await Player.findAll()
-
-  res.json({ players })
-})
-
-routes.get('/banker', async (_req, res) => {
-  await db.sync()
-
-  const banker = await Player.findAll({
-    where: {
+    await newBanker.update({
       banker: true,
-    },
-  })
-
-  res.json({ bankerExists: !!banker.length })
-})
-
-routes.get('/banker/:id', async (req, res) => {
-  await db.sync()
-
-  const { id } = req.params
-
-  const player = await Player.findByPk(id)
-  const players = await Player.findAll()
-  const transfers = await Transfer.findAll()
-
-  if (player) res.json({ ...player.dataValues, player, players, transfers })
-  else res.status(400).send()
-})
-
-routes.post('/create-banker', async (req, res) => {
-  await db.sync()
-
-  const { name } = req.body
-
-  const id = uuid()
-  const transferId = uuid()
-
-  const data = await Player.create({
-    id,
-    name,
-    amount: 200000,
-    banker: true,
-  })
-
-  await Transfer.create({
-    id: transferId,
-    sender: 'Bank',
-    receiver: name,
-    amountSent: 200000,
-  })
-
-  const players = await Player.findAll()
-
-  ws.emit('updateInfo', players)
-
-  res.json(data)
-
-  ws.emit('updatePage', true)
-})
-
-routes.get('/common-player/:id', async (req, res) => {
-  await db.sync()
-
-  const { id } = req.params
-
-  const player = await Player.findByPk(id)
-  const players = await Player.findAll()
-  const transfers = await Transfer.findAll()
-
-  if (player) res.json({ ...player.dataValues, player, players, transfers })
-  else res.status(400).send()
-})
-
-routes.get('/player/:id', async (req, res) => {
-  await db.sync()
-
-  const { id } = req.params
-
-  const player = await Player.findByPk(id)
-  const players = await Player.findAll()
-  const transfers = await Transfer.findAll()
-
-  if (player) res.json({ player, players, transfers })
-  else res.status(400).send()
-})
-
-routes.post('/change/:id', async (req, res) => {
-  await db.sync()
-
-  const { id } = req.params
-
-  const player = await Player.findByPk(id)
-
-  if (player) {
-    player.update({
-      banker: !player.dataValues.banker,
     })
 
-    res.json({ player })
-  } else res.status(400).send()
-})
+    const players = await Player.findAll()
 
-routes.post('/create-common-player', async (req, res) => {
-  await db.sync()
+    ws.emit('passBank', newBankerId)
+    ws.emit('updateInfo', players)
 
-  const { name } = req.body
-
-  const id = uuid()
-  const transferId = uuid()
-
-  const data = await Player.create({
-    id,
-    name,
-    amount: 200000,
-    banker: false,
+    res.status(200).send()
   })
 
-  await Transfer.create({
-    id: transferId,
-    sender: 'Bank',
-    receiver: name,
-    amountSent: 200000,
+  routes.get('/players', async (_req, res) => {
+    const playersRepo = db.getRepository(Player)
+    const players = await playersRepo.find()
+
+    res.status(200).json({ players })
   })
 
-  const players = await Player.findAll()
-  const transfers = await Transfer.findAll()
+  routes.get('/banker', async (_req, res) => {
+    await db.sync()
 
-  ws.emit('updateInfo', players)
-  ws.emit('newTransfer', transfers)
-
-  res.json(data)
-})
-
-routes.post('/transfer/:senderId/:receiverId', async (req, res) => {
-  const { senderId, receiverId } = req.params
-  const { howMuch, asBank } = req.body
-  const id = uuid()
-  let senderName = 'Bank'
-  let receiverName = 'Bank'
-
-  if (!asBank) {
-    const sender = await Player.findByPk(senderId)
-    await sender.update({
-      amount: sender.amount - parseInt(howMuch),
+    const banker = await Player.findAll({
+      where: {
+        banker: true,
+      },
     })
-    senderName = sender.name
-  }
 
-  if (receiverId != 'bank') {
-    const receiver = await Player.findByPk(receiverId)
-    await receiver.update({
-      amount: receiver.amount + parseInt(howMuch),
-    })
-    receiverName = receiver.name
-  }
-
-  await Transfer.create({
-    id,
-    sender: senderName,
-    receiver: receiverName,
-    amountSent: howMuch,
+    res.json({ bankerExists: !!banker.length })
   })
 
-  const players = await Player.findAll()
+  routes.get('/banker/:id', async (req, res) => {
+    await db.sync()
 
-  ws.emit('updateInfo', players)
+    const { id } = req.params
 
-  const transfers = await Transfer.findAll()
+    const player = await Player.findByPk(id)
+    const players = await Player.findAll()
+    const transfers = await Transfer.findAll()
 
-  ws.emit('newTransfer', transfers)
+    if (player) res.json({ ...player.dataValues, player, players, transfers })
+    else res.status(400).send()
+  })
 
-  res.status(200).send()
-})
+  routes.post('/create-banker', async (req, res) => {
+    await db.sync()
 
-routes.delete('/clean', async (_req, res) => {
-  await Player.drop()
-  await Transfer.drop()
+    const { name } = req.body
 
-  res.status(200).send()
+    const id = uuid()
+    const transferId = uuid()
 
-  ws.emit('bankerDropped')
-  ws.emit('updatePage', false)
-})
+    const data = await Player.create({
+      id,
+      name,
+      amount: 200000,
+      banker: true,
+    })
 
-routes.delete('/exit/:id', async (req, res) => {
-  await db.sync()
+    await Transfer.create({
+      id: transferId,
+      sender: 'Bank',
+      receiver: name,
+      amountSent: 200000,
+    })
 
-  const { id } = req.params
+    const players = await Player.findAll()
 
-  const player = await Player.findByPk(id)
+    ws.emit('updateInfo', players)
 
-  if (player.banker) {
+    res.json(data)
+
+    ws.emit('updatePage', true)
+  })
+
+  routes.get('/common-player/:id', async (req, res) => {
+    await db.sync()
+
+    const { id } = req.params
+
+    const player = await Player.findByPk(id)
+    const players = await Player.findAll()
+    const transfers = await Transfer.findAll()
+
+    if (player) res.json({ ...player.dataValues, player, players, transfers })
+    else res.status(400).send()
+  })
+
+  routes.get('/player/:id', async (req, res) => {
+    await db.sync()
+
+    const { id } = req.params
+
+    const player = await Player.findByPk(id)
+    const players = await Player.findAll()
+    const transfers = await Transfer.findAll()
+
+    if (player) res.json({ player, players, transfers })
+    else res.status(400).send()
+  })
+
+  routes.post('/change/:id', async (req, res) => {
+    await db.sync()
+
+    const { id } = req.params
+
+    const player = await Player.findByPk(id)
+
+    if (player) {
+      player.update({
+        banker: !player.dataValues.banker,
+      })
+
+      res.json({ player })
+    } else res.status(400).send()
+  })
+
+  routes.post('/create-common-player', async (req, res) => {
+    await db.sync()
+
+    const { name } = req.body
+
+    const id = uuid()
+    const transferId = uuid()
+
+    const data = await Player.create({
+      id,
+      name,
+      amount: 200000,
+      banker: false,
+    })
+
+    await Transfer.create({
+      id: transferId,
+      sender: 'Bank',
+      receiver: name,
+      amountSent: 200000,
+    })
+
+    const players = await Player.findAll()
+    const transfers = await Transfer.findAll()
+
+    ws.emit('updateInfo', players)
+    ws.emit('newTransfer', transfers)
+
+    res.json(data)
+  })
+
+  routes.post('/transfer/:senderId/:receiverId', async (req, res) => {
+    const { senderId, receiverId } = req.params
+    const { howMuch, asBank } = req.body
+    const id = uuid()
+    let senderName = 'Bank'
+    let receiverName = 'Bank'
+
+    if (!asBank) {
+      const sender = await Player.findByPk(senderId)
+      await sender.update({
+        amount: sender.amount - parseInt(howMuch),
+      })
+      senderName = sender.name
+    }
+
+    if (receiverId != 'bank') {
+      const receiver = await Player.findByPk(receiverId)
+      await receiver.update({
+        amount: receiver.amount + parseInt(howMuch),
+      })
+      receiverName = receiver.name
+    }
+
+    await Transfer.create({
+      id,
+      sender: senderName,
+      receiver: receiverName,
+      amountSent: howMuch,
+    })
+
+    const players = await Player.findAll()
+
+    ws.emit('updateInfo', players)
+
+    const transfers = await Transfer.findAll()
+
+    ws.emit('newTransfer', transfers)
+
+    res.status(200).send()
+  })
+
+  routes.delete('/clean', async (_req, res) => {
     await Player.drop()
     await Transfer.drop()
 
@@ -234,19 +216,39 @@ routes.delete('/exit/:id', async (req, res) => {
 
     ws.emit('bankerDropped')
     ws.emit('updatePage', false)
-  } else {
-    await Player.destroy({
-      where: {
-        id,
-      },
-    })
+  })
 
-    const players = await Player.findAll()
+  routes.delete('/exit/:id', async (req, res) => {
+    await db.sync()
 
-    ws.emit('updateInfo', players)
+    const { id } = req.params
 
-    res.status(200).send()
-  }
-})
+    const player = await Player.findByPk(id)
 
-export default routes
+    if (player.banker) {
+      await Player.drop()
+      await Transfer.drop()
+
+      res.status(200).send()
+
+      ws.emit('bankerDropped')
+      ws.emit('updatePage', false)
+    } else {
+      await Player.destroy({
+        where: {
+          id,
+        },
+      })
+
+      const players = await Player.findAll()
+
+      ws.emit('updateInfo', players)
+
+      res.status(200).send()
+    }
+  })
+
+  return routes
+}
+
+export default getRoutes

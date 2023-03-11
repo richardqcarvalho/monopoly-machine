@@ -2,13 +2,12 @@ import cors from 'cors'
 import express from 'express'
 import { createServer } from 'http'
 // import path from 'path'
-import { Server } from 'socket.io'
-// import routes from './routes.js'
 import os from 'os'
 import { dirname } from 'path'
+import { Server } from 'socket.io'
+import getRoutes from './routes.js'
 // import favicon from 'serve-favicon'
 import { fileURLToPath } from 'url'
-import { Player } from './database/entities.js'
 import database from './database/index.js'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -23,29 +22,6 @@ database.initialize().then(db => {
   // )
   // server.use(express.static(path.join(__dirname, '..', '..', 'front', 'dist')))
   server.use(express.json())
-  // server.use(routes)
-
-  server.get('/players', async (_req, res) => {
-    const playersRepo = db.getRepository(Player)
-    const players = await playersRepo.find()
-
-    res.status(200).json({ players })
-  })
-
-  server.post('/players', async (req, res) => {
-    const { name } = req.body
-
-    const {
-      identifiers: [{ id }],
-    } = await db.manager.insert(Player, {
-      name,
-    })
-
-    res.status(200).send({
-      id,
-      name,
-    })
-  })
 
   const httpServer = createServer(server)
   const ws = new Server(httpServer, {
@@ -61,6 +37,8 @@ database.initialize().then(db => {
       console.log(`socket ${socket.id} disconnected due to ${reason}`)
     })
   })
+
+  server.use(getRoutes(db, ws))
 
   const netWorkInfo = os.networkInterfaces()
   const port = process.env.PORT || '4000'

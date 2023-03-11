@@ -12,13 +12,15 @@ COPY back/package.json back/yarn.lock ./back
 
 RUN cd back && yarn && cd ..
 
-# COPY front/package.json front/yarn.lock ./front
+RUN mkdir front
 
-# RUN cd front && yarn && cd ..
+COPY front/package.json front/yarn.lock ./front
 
-COPY ./back ./back
+RUN cd front && yarn && cd ..
+
+COPY . .
 
 EXPOSE 4000
-# EXPOSE 3000
+EXPOSE 3000
 
-CMD ["yarn", "back"]
+CMD ["yarn", "dev"]
