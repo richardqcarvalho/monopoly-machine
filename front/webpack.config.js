@@ -7,9 +7,8 @@ module.exports = {
     port: 3000,
     historyApiFallback: true,
   },
-  mode: 'development',
   resolve: {
-    extensions: ['.js', '.jsx'],
+    extensions: ['.js'],
   },
   entry: './src/index.js',
   plugins: [

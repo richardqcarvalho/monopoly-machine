@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "start": "cd front && yarn && yarn build && cd ../back && yarn && yarn start",
-    "dev": "cd front && yarn build-dev && cd ../back && yarn dev"
+    "start": "cd front && yarn build && cd ../back && yarn start",
+    "dev": "cd front && yarn build-dev && cd ../back && yarn dev",
+    "back": "cd back && yarn dev"
   },
   "keywords": [],
   "author": "",
