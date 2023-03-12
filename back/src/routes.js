@@ -1,29 +1,29 @@
 import express from 'express'
 import { v4 as uuid } from 'uuid'
-import { Player } from './database/entities.js'
+import { Player, Transfer } from './database/entities.js'
 
-const getRoutes = (db, ws) => {
+const getRoutes = ({ manager: db }, ws) => {
   const routes = express.Router()
 
   routes.get('/', (_req, res) => res.status(200).json({ message: 'OK' }))
 
   routes.post('/pass-bank/:currentBankerId/:newBankerId', async (req, res) => {
-    await db.sync()
-
     const { currentBankerId, newBankerId } = req.params
 
-    await Player.destroy({
-      where: {
-        id: currentBankerId,
+    await db.delete(Player, {
+      id: currentBankerId,
+    })
+    await db.update(
+      Player,
+      {
+        id: newBankerId,
       },
-    })
-    const newBanker = await Player.findByPk(newBankerId)
+      {
+        banker: true,
+      }
+    )
 
-    await newBanker.update({
-      banker: true,
-    })
-
-    const players = await Player.findAll()
+    const players = await db.find(Player)
 
     ws.emit('passBank', newBankerId)
     ws.emit('updateInfo', players)
@@ -32,16 +32,13 @@ const getRoutes = (db, ws) => {
   })
 
   routes.get('/players', async (_req, res) => {
-    const playersRepo = db.getRepository(Player)
-    const players = await playersRepo.find()
+    const players = await db.find(Player)
 
     res.status(200).json({ players })
   })
 
   routes.get('/banker', async (_req, res) => {
-    await db.sync()
-
-    const banker = await Player.findAll({
+    const banker = await db.find(Player, {
       where: {
         banker: true,
       },
@@ -51,120 +48,124 @@ const getRoutes = (db, ws) => {
   })
 
   routes.get('/banker/:id', async (req, res) => {
-    await db.sync()
-
     const { id } = req.params
 
-    const player = await Player.findByPk(id)
-    const players = await Player.findAll()
-    const transfers = await Transfer.findAll()
+    const [player] = await db.find(Player, {
+      where: {
+        id,
+      },
+    })
+    const players = await db.find(Player)
+    const transfers = await db.find(Transfer)
 
-    if (player) res.json({ ...player.dataValues, player, players, transfers })
+    if (player) res.json({ ...player, players, transfers })
     else res.status(400).send()
   })
 
   routes.post('/create-banker', async (req, res) => {
-    await db.sync()
-
     const { name } = req.body
 
-    const id = uuid()
+    const bankerId = uuid()
     const transferId = uuid()
+    const amount = 200000
+    const banker = true
 
-    const data = await Player.create({
-      id,
+    await db.insert(Player, {
+      id: bankerId,
       name,
-      amount: 200000,
-      banker: true,
+      amount,
+      banker,
     })
 
-    await Transfer.create({
+    await db.insert(Transfer, {
       id: transferId,
       sender: 'Bank',
       receiver: name,
-      amountSent: 200000,
+      amountSent: amount,
     })
 
-    const players = await Player.findAll()
+    const players = await db.find(Player)
 
     ws.emit('updateInfo', players)
 
-    res.json(data)
+    res.status(200).json({ id: bankerId, name, amount, banker })
 
     ws.emit('updatePage', true)
   })
 
   routes.get('/common-player/:id', async (req, res) => {
-    await db.sync()
-
     const { id } = req.params
 
-    const player = await Player.findByPk(id)
-    const players = await Player.findAll()
-    const transfers = await Transfer.findAll()
+    const [player] = await db.find(Player, {
+      where: {
+        id,
+      },
+    })
+    const players = await db.find(Player)
+    const transfers = await db.find(Transfer)
 
-    if (player) res.json({ ...player.dataValues, player, players, transfers })
+    if (player) res.json({ ...player, players, transfers })
     else res.status(400).send()
   })
 
   routes.get('/player/:id', async (req, res) => {
-    await db.sync()
-
     const { id } = req.params
 
-    const player = await Player.findByPk(id)
-    const players = await Player.findAll()
-    const transfers = await Transfer.findAll()
+    const [player] = await db.find(Player, { where: { id } })
+    const players = await db.find(Player)
+    const transfers = await db.find(Transfer)
 
     if (player) res.json({ player, players, transfers })
     else res.status(400).send()
   })
 
   routes.post('/change/:id', async (req, res) => {
-    await db.sync()
-
     const { id } = req.params
 
-    const player = await Player.findByPk(id)
+    const [player] = await db.find(Player, { where: { id } })
 
     if (player) {
-      player.update({
-        banker: !player.dataValues.banker,
-      })
+      db.update(
+        Player,
+        { id },
+        {
+          banker: !player.banker,
+        }
+      )
 
       res.json({ player })
     } else res.status(400).send()
   })
 
   routes.post('/create-common-player', async (req, res) => {
-    await db.sync()
-
     const { name } = req.body
 
-    const id = uuid()
+    const commonPlayerId = uuid()
     const transferId = uuid()
+    const amount = 200000
+    const banker = false
 
-    const data = await Player.create({
-      id,
+    await db.insert(Player, {
+      id: commonPlayerId,
       name,
-      amount: 200000,
-      banker: false,
+      amount,
+      banker,
     })
 
-    await Transfer.create({
+    await db.insert(Transfer, {
       id: transferId,
       sender: 'Bank',
       receiver: name,
-      amountSent: 200000,
+      amountSent: amount,
     })
 
-    const players = await Player.findAll()
-    const transfers = await Transfer.findAll()
+    const players = await db.find(Player)
+    const transfers = await db.find(Transfer)
 
     ws.emit('updateInfo', players)
     ws.emit('newTransfer', transfers)
 
-    res.json(data)
+    res.status(200).json({ id: commonPlayerId, name, amount, banker })
   })
 
   routes.post('/transfer/:senderId/:receiverId', async (req, res) => {
@@ -175,33 +176,41 @@ const getRoutes = (db, ws) => {
     let receiverName = 'Bank'
 
     if (!asBank) {
-      const sender = await Player.findByPk(senderId)
-      await sender.update({
-        amount: sender.amount - parseInt(howMuch),
-      })
+      const [sender] = await db.find(Player, { where: { id: senderId } })
+      await db.update(
+        Player,
+        { id: senderId },
+        {
+          amount: parseInt(sender.amount) - parseInt(howMuch),
+        }
+      )
       senderName = sender.name
     }
 
     if (receiverId != 'bank') {
-      const receiver = await Player.findByPk(receiverId)
-      await receiver.update({
-        amount: receiver.amount + parseInt(howMuch),
-      })
+      const [receiver] = await db.find(Player, { where: { id: receiverId } })
+      await db.update(
+        Player,
+        { id: receiverId },
+        {
+          amount: parseInt(receiver.amount) + parseInt(howMuch),
+        }
+      )
       receiverName = receiver.name
     }
 
-    await Transfer.create({
+    await db.insert(Transfer, {
       id,
       sender: senderName,
       receiver: receiverName,
       amountSent: howMuch,
     })
 
-    const players = await Player.findAll()
+    const players = await db.find(Player)
 
     ws.emit('updateInfo', players)
 
-    const transfers = await Transfer.findAll()
+    const transfers = await db.find(Transfer)
 
     ws.emit('newTransfer', transfers)
 
@@ -209,8 +218,8 @@ const getRoutes = (db, ws) => {
   })
 
   routes.delete('/clean', async (_req, res) => {
-    await Player.drop()
-    await Transfer.drop()
+    db.clear(Player)
+    db.clear(Transfer)
 
     res.status(200).send()
 
@@ -219,28 +228,28 @@ const getRoutes = (db, ws) => {
   })
 
   routes.delete('/exit/:id', async (req, res) => {
-    await db.sync()
-
     const { id } = req.params
 
-    const player = await Player.findByPk(id)
+    const [player] = await db.find(Player, {
+      where: {
+        id,
+      },
+    })
 
     if (player.banker) {
-      await Player.drop()
-      await Transfer.drop()
+      await db.clear(Player)
+      await db.clear(Transfer)
 
       res.status(200).send()
 
       ws.emit('bankerDropped')
       ws.emit('updatePage', false)
     } else {
-      await Player.destroy({
-        where: {
-          id,
-        },
+      await db.delete(Player, {
+        id,
       })
 
-      const players = await Player.findAll()
+      const players = await db.find(Player)
 
       ws.emit('updateInfo', players)
 

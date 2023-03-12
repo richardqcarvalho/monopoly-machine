@@ -5,8 +5,7 @@ export const Player = new EntitySchema({
   columns: {
     id: {
       primary: true,
-      type: 'int',
-      generated: true,
+      type: 'varchar',
     },
     name: {
       type: 'varchar',
@@ -25,8 +24,7 @@ export const Transfer = new EntitySchema({
   columns: {
     id: {
       primary: true,
-      type: 'int',
-      generated: true,
+      type: 'varchar',
     },
     sender: {
       type: 'varchar',

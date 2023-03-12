@@ -1,27 +1,27 @@
-import React, { Fragment, useEffect, useState, useRef } from 'react'
-import {
-  Container,
-  Title,
-  Button,
-  Message,
-  Card,
-  CardsContainer,
-  DropButton,
-  Input,
-  TransfersContainer,
-  Transfers,
-  ErrorMessage,
-  ErrorMessageWrapper,
-  TransferConfirmation,
-  AmountToSend,
-  PlayersAmount,
-} from './styles'
-import Loading from '../../components/Loading'
+import React, { Fragment, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import io from 'socket.io-client'
+import Loading from '../../components/Loading'
+import colors from '../../styles/colors'
 import { getQueryParams, getURL } from '../../utils'
 import api from '../../utils/api'
-import io from 'socket.io-client'
-import colors from '../../styles/colors'
+import {
+  AmountToSend,
+  Button,
+  Card,
+  CardsContainer,
+  Container,
+  DropButton,
+  ErrorMessage,
+  ErrorMessageWrapper,
+  Input,
+  Message,
+  PlayersAmount,
+  Title,
+  TransferConfirmation,
+  Transfers,
+  TransfersContainer,
+} from './styles'
 
 const DEFAULT_STATE = {
   id: null,
@@ -63,7 +63,7 @@ function CommonPlayerPage() {
         })
         socket.connect()
 
-        setAmount(amount)
+        setAmount(parseInt(amount))
         setPlayerName(name)
         setPlayers([
           ...players.filter(({ id: playerId }) => id != playerId),
@@ -246,10 +246,13 @@ function CommonPlayerPage() {
                   color: sender == playerName ? colors.danger : colors.success,
                 }),
               }}
-            >{`${sender} -> ${receiver} | ${amountSent.toLocaleString('pt-BR', {
-              style: 'currency',
-              currency: 'BRL',
-            })}`}</Transfers>
+            >{`${sender} -> ${receiver} | ${parseInt(amountSent).toLocaleString(
+              'pt-BR',
+              {
+                style: 'currency',
+                currency: 'BRL',
+              }
+            )}`}</Transfers>
           ))}
         </TransfersContainer>
       )}

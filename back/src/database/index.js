@@ -1,5 +1,5 @@
 import { DataSource } from 'typeorm'
-import { Player } from './entities.js'
+import { Player, Transfer } from './entities.js'
 
 export default new DataSource({
   type: 'postgres',
@@ -8,5 +8,5 @@ export default new DataSource({
   username: 'postgres',
   password: 'postgrespw',
   synchronize: true,
-  entities: [Player],
+  entities: [Player, Transfer],
 })
