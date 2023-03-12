@@ -6,4 +6,5 @@ export default {
   success: '#27ae60',
   primaryDisabled: '#ccc',
   contrastDisabled: '#aaa',
+  golden: '#f1c40f',
 }

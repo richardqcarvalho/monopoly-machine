@@ -1,0 +1,14 @@
+services:
+  app:
+    build: .
+    ports:
+      - 4000:4000
+      - 3000:3000
+    volumes:
+      - .:/usr/app
+  postgres:
+    image: postgres:latest
+    environment:
+      - POSTGRES_PASSWORD=postgrespw
+    ports:
+      - 5432:5432

@@ -1,10 +1,8 @@
 import axios from 'axios'
+import { getURL } from '.'
 
 const api = axios.create({
-  baseURL:
-    process.env.NODE_ENV == 'development'
-      ? 'http://192.168.15.9:4000'
-      : 'https://monopoly-machine.herokuapp.com',
+  baseURL: getURL(),
 })
 
 export default api

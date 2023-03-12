@@ -14,3 +14,8 @@ export const getQueryParams = url => {
 
   return obj
 }
+
+export const getURL = () =>
+  process.env.NODE_ENV == 'development'
+    ? 'http://localhost:4000'
+    : 'http://localhost:4000'

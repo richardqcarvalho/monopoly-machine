@@ -1,27 +1,27 @@
 import React, { Fragment, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import io from 'socket.io-client'
+import Loading from '../../components/Loading'
+import colors from '../../styles/colors'
+import { getQueryParams, getURL } from '../../utils'
+import api from '../../utils/api'
 import {
-  Container,
-  Title,
+  AmountToSend,
   Button,
-  Message,
   Card,
   CardsContainer,
+  Container,
   DropButton,
-  Input,
-  Transfers,
-  TransfersContainer,
   ErrorMessage,
   ErrorMessageWrapper,
-  TransferConfirmation,
-  AmountToSend,
+  Input,
+  Message,
   PlayersAmount,
+  Title,
+  TransferConfirmation,
+  Transfers,
+  TransfersContainer,
 } from './styles'
-import Loading from '../../components/Loading'
-import { getQueryParams } from '../../utils'
-import api from '../../utils/api'
-import io from 'socket.io-client'
-import colors from '../../styles/colors'
 
 const DEFAULT_STATE = {
   id: null,
@@ -44,11 +44,7 @@ function BankerPage() {
   const [transfers, setTransfers] = useState([])
 
   useEffect(() => {
-    const socket = io(
-      process.env.NODE_ENV == 'development'
-        ? 'http://192.168.15.9:4000'
-        : 'https://monopoly-machine.herokuapp.com'
-    )
+    const socket = io(getURL())
 
     api
       .get(`/banker/${bankerId}`)
@@ -65,7 +61,7 @@ function BankerPage() {
         socket.on('bankerDropped', () => navigate('/'))
         socket.connect()
 
-        setAmount(amount)
+        setAmount(parseInt(amount))
         setPlayerName(name)
         setPlayers([
           ...players.filter(({ id: playerId }) => bankerId != playerId),
@@ -273,10 +269,13 @@ function BankerPage() {
                   color: sender == playerName ? colors.danger : colors.success,
                 }),
               }}
-            >{`${sender} -> ${receiver} | ${amountSent.toLocaleString('pt-BR', {
-              style: 'currency',
-              currency: 'BRL',
-            })}`}</Transfers>
+            >{`${sender} -> ${receiver} | ${parseInt(amountSent).toLocaleString(
+              'pt-BR',
+              {
+                style: 'currency',
+                currency: 'BRL',
+              }
+            )}`}</Transfers>
           ))}
         </TransfersContainer>
       )}
