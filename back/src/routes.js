@@ -5,8 +5,6 @@ import { Player, Transfer } from './database/entities.js'
 const getRoutes = ({ manager: db }, ws) => {
   const routes = express.Router()
 
-  routes.get('/', (_req, res) => res.status(200).json({ message: 'OK' }))
-
   routes.post('/pass-bank/:currentBankerId/:newBankerId', async (req, res) => {
     const { currentBankerId, newBankerId } = req.params
 

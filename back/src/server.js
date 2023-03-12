@@ -1,14 +1,12 @@
 import cors from 'cors'
 import express from 'express'
 import { createServer } from 'http'
-// import path from 'path'
 import os from 'os'
-import { dirname } from 'path'
+import path, { dirname } from 'path'
 import { Server } from 'socket.io'
-import getRoutes from './routes.js'
-// import favicon from 'serve-favicon'
 import { fileURLToPath } from 'url'
 import database from './database/index.js'
+import getRoutes from './routes.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -17,10 +15,7 @@ database.initialize().then(db => {
   const server = express()
 
   server.use(cors())
-  // server.use(
-  //   favicon(path.join(__dirname, '..', '..', 'front', 'dist', 'favicon.ico'))
-  // )
-  // server.use(express.static(path.join(__dirname, '..', '..', 'front', 'dist')))
+  server.use(express.static(path.join(__dirname, '..', '..', 'front', 'dist')))
   server.use(express.json())
 
   const httpServer = createServer(server)

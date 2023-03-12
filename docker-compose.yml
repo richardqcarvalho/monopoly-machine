@@ -6,9 +6,41 @@ services:
       - 3000:3000
     volumes:
       - .:/usr/app
+    networks:
+      - traefik-hub
   postgres:
     image: postgres:latest
     environment:
       - POSTGRES_PASSWORD=postgrespw
     ports:
       - 5432:5432
+    networks:
+      - traefik-hub
+  hub-agent:
+    image: ghcr.io/traefik/hub-agent-traefik:v1.0.0
+    pull_policy: always
+    container_name: hub-agent
+    restart: 'on-failure'
+    command:
+      - run
+      - --hub.token=440722a4-d8f5-4f0e-8ef1-f56fb94b9cba
+      - --auth-server.advertise-url=http://hub-agent
+      - --traefik.host=traefik
+      - --traefik.tls.insecure=true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - traefik-hub
+    depends_on:
+      - traefik
+  traefik:
+    image: traefik:v2.9
+    container_name: traefik
+    command:
+      - --experimental.hub=true
+      - --hub.tls.insecure=true
+      - --metrics.prometheus.addrouterslabels=true
+    networks:
+      - traefik-hub
+networks:
+  traefik-hub: {}
