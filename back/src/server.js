@@ -1,7 +1,6 @@
 import cors from 'cors'
 import express from 'express'
 import { createServer } from 'http'
-import os from 'os'
 import path, { dirname } from 'path'
 import { Server } from 'socket.io'
 import { fileURLToPath } from 'url'
@@ -35,13 +34,7 @@ database.initialize().then(db => {
 
   server.use(getRoutes(db, ws))
 
-  const netWorkInfo = os.networkInterfaces()
   const port = process.env.PORT || '4000'
 
-  if (netWorkInfo['Wi-Fi']) {
-    const [_a, _b, _c, { address: ip }] = netWorkInfo['Wi-Fi']
-    httpServer.listen(port, () =>
-      console.log(`Connected on http://${ip}:${port}`)
-    )
-  } else httpServer.listen(port, () => console.log(`Connected on port ${port}`))
+  httpServer.listen(port, () => console.log(`Connected on port ${port}`))
 })
