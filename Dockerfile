@@ -21,6 +21,5 @@ RUN cd front && yarn && cd ..
 COPY . .
 
 EXPOSE 4000
-EXPOSE 3000
 
-CMD ["yarn", "dev"]
+CMD ["yarn", "start"]

@@ -3,7 +3,6 @@ services:
     build: .
     ports:
       - 4000:4000
-      - 3000:3000
     volumes:
       - .:/usr/app
     networks:
@@ -17,7 +16,7 @@ services:
     networks:
       - traefik-hub
   hub-agent:
-    image: ghcr.io/traefik/hub-agent-traefik:v1.0.0
+    image: ghcr.io/traefik/hub-agent-traefik:latest
     pull_policy: always
     container_name: hub-agent
     restart: 'on-failure'
@@ -34,7 +33,7 @@ services:
     depends_on:
       - traefik
   traefik:
-    image: traefik:v2.9
+    image: traefik:latest
     container_name: traefik
     command:
       - --experimental.hub=true
