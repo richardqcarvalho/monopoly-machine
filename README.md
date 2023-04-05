@@ -2,10 +2,10 @@
 
 An application that helps us to do all the Monopoly financial interactions with no need to use the paper money or to buy the transactions machine. Wait.. actually, that's the transaction machine! :o
 
-![image](https://img.shields.io/tokei/lines/github/richardqcarvalho/monopoly-machine)
-![image](https://img.shields.io/badge/status-under%20development-yellow)
-![image](https://img.shields.io/github/last-commit/richardqcarvalho/monopoly-machine)
-![image](https://img.shields.io/website?down_color=red&down_message=down&up_color=green&up_message=up&url=https%3A%2F%2Fweb.monopolymachine.app)
+![image](https://img.shields.io/tokei/lines/github/richardqcarvalho/monopoly-machine?style=for-the-badge)
+![image](https://img.shields.io/badge/status-under%20development-yellow?style=for-the-badge)
+![image](https://img.shields.io/github/last-commit/richardqcarvalho/monopoly-machine?style=for-the-badge&logo=github&logoColor=white)
+![image](https://img.shields.io/website?down_color=red&down_message=down&up_color=green&up_message=up&url=https%3A%2F%2Fweb.monopolymachine.app&style=for-the-badge&logo=traefikproxy&logoColor=white)
 
 ## Summary
 
