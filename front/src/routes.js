@@ -6,14 +6,26 @@ import HomePage from './pages/Home'
 import GamePage from './pages/Game'
 
 export default function Routes() {
-  return (
-    <HashRouter>
-      <Container>
-        <Route path="/" element={<HomePage />} />
-        <Route path="banker" element={<BankerPage />} />
-        <Route path="common-player" element={<CommonPlayerPage />} />
-        <Route path="game" element={<GamePage />} />
-      </Container>
-    </HashRouter>
-  )
+	return (
+		<HashRouter>
+			<Container>
+				<Route
+					path='/'
+					element={<HomePage />}
+				/>
+				<Route
+					path='banker'
+					element={<BankerPage />}
+				/>
+				<Route
+					path='common-player'
+					element={<CommonPlayerPage />}
+				/>
+				<Route
+					path='game'
+					element={<GamePage />}
+				/>
+			</Container>
+		</HashRouter>
+	)
 }

@@ -1,17 +1,17 @@
 {
-  "name": "monopoly-machine",
-  "version": "1.0.0",
-  "description": "",
-  "scripts": {
-    "start": "cd front && yarn build && cd ../back && yarn start",
-    "dev": "npx concurrently --kill-others \"cd back && yarn dev\" \"npx wait-on http://localhost:4000 && cd front && yarn dev\""
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "concurrently": "^7.6.0",
-    "prettier": "^2.7.1",
-    "wait-on": "^7.0.1"
-  }
+	"name": "monopoly-machine",
+	"version": "1.0.0",
+	"description": "",
+	"scripts": {
+		"start": "cd front && yarn build && cd ../back && yarn start",
+		"dev": "npx concurrently --kill-others \"cd back && yarn dev\" \"npx wait-on http://localhost:4000 && cd front && yarn dev\""
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"concurrently": "^7.6.0",
+		"prettier": "^2.7.1",
+		"wait-on": "^7.0.1"
+	}
 }
