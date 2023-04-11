@@ -15,16 +15,16 @@ An application that helps us to do all the Monopoly financial interactions with 
 ## Main libs used
 
 - Back
-  - [Express]()
-  - [Postgres]()
-  - [TypeORM]()
+  - [Express](https://expressjs.com/)
+  - [Postgres](https://www.postgresql.org/)
+  - [TypeORM](https://typeorm.io/)
 - Front
   - [React](https://react.dev/)
-  - [Framer Motion]()
-  - [Axios]()
-  - [Styled Components]()
+  - [Framer Motion](https://www.framer.com/motion)
+  - [Axios](https://axios-http.com/)
+  - [Styled Components](https://styled-components.com/)
 - General
-  - [Socket.io]()
+  - [Socket.io](https://socket.io/)
   - [Wait-on](https://github.com/jeffbski/wait-on)
   - [Concurrently](https://github.com/open-cli-tools/concurrently)
   - [Prettier](https://prettier.io/)
@@ -40,3 +40,4 @@ An application that helps us to do all the Monopoly financial interactions with 
 - [x] Dockerize the project to make possible to upload that to AWS
 - [ ] Redesign game page to decrease the code amount and to unify banker and common player pages to just one
 - [ ] Allow a player to create a room instead of just enter it (and perhaps provide him a link to send to someone to enter the room created by him)
+- [ ] Add animations to improve user experience
