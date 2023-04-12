@@ -4,7 +4,7 @@
 	"description": "",
 	"scripts": {
 		"start": "cd front && yarn build && cd ../back && yarn start",
-		"dev": "npx concurrently --kill-others \"cd back && yarn dev\" \"npx wait-on http://localhost:4000 && cd front && yarn dev\""
+		"dev": "concurrently -k -n back,front \"cd back && yarn dev\" \"wait-on tcp:4000 && cd front && yarn dev\""
 	},
 	"keywords": [],
 	"author": "",
